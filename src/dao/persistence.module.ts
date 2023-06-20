@@ -1,6 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { YoutubeUserEntity } from './entity/youtube-user.entity';
+import { NotionConfigEntity } from './entity/notion-config.entity';
+
+const moduleEntities: any[] = [
+    YoutubeUserEntity,
+    NotionConfigEntity,
+];
 
 @Module({
     imports: [
@@ -11,7 +17,7 @@ import { YoutubeUserEntity } from './entity/youtube-user.entity';
             username: 'root',
             password: 'rootroot',
             database: 'shitshup',
-            entities: [YoutubeUserEntity],
+            entities: moduleEntities,
             synchronize: true,
         }),
     ],
