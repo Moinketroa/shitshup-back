@@ -6,6 +6,7 @@ import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import * as process from 'process';
 import { YoutubeUser } from './model/youtube-user.model';
 import { YoutubeUserMapper } from '../dao/mapper/youtube-user.mapper';
+import { isDefined } from '../util/util';
 
 @Injectable()
 export class YoutubeAuthService {
@@ -101,7 +102,7 @@ export class YoutubeAuthService {
             email: youtubeUser.email,
         });
 
-        if (!!userFound) {
+        if (isDefined(userFound)) {
             // TODO: update user
             return userFound;
         } else {
