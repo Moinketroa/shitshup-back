@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import { NotionService } from './notion.service';
+import { NotionConfigService } from './notion-config.service';
 import { ReadNotionConfigDTO } from './model/read-notion-config.dto';
 import { CreateNotionConfigDTO } from './model/create-notion-config.dto';
 import { UpdateNotionConfigDTO } from './model/update-notion-config.dto';
 
 @Controller('notion/config')
 export class NotionConfigController {
-    constructor(private readonly notionService: NotionService) {}
+    constructor(private readonly notionService: NotionConfigService) {}
 
     @Get()
     myConfig(): Promise<ReadNotionConfigDTO | null> {

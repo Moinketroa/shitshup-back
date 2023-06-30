@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { NotionConfigEntity } from '../entity/notion-config.entity';
-import { ReadNotionConfigDTO } from '../../notion/model/read-notion-config.dto';
-import { CreateNotionConfigDTO } from '../../notion/model/create-notion-config.dto';
+import { ReadNotionConfigDTO } from '../../../notion/config/model/read-notion-config.dto';
+import { CreateNotionConfigDTO } from '../../../notion/config/model/create-notion-config.dto';
 
 @Injectable()
 export class NotionConfigMapper {

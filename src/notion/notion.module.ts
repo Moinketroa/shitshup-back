@@ -1,10 +1,18 @@
-import { Module } from '@nestjs/common';
-import { NotionService } from './notion.service';
+import { Module, Scope } from '@nestjs/common';
+import { NotionConfigService } from './config/notion-config.service';
 import { NotionController } from './notion.controller';
-import { NotionConfigEntity } from '../dao/entity/notion-config.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { NotionConfigMapper } from '../dao/mapper/notion-config.mapper';
-import { NotionConfigController } from './notion-config.controller';
+import { NotionConfigMapper } from '../dao/notion/mapper/notion-config.mapper';
+import { NotionConfigController } from './config/notion-config.controller';
+import { NotionService } from './notion.service';
+import { NotionDatabaseRepository } from '../dao/notion/notion-database-repository.service';
+import { NotionDatabaseMapper } from '../dao/notion/mapper/notion-database.mapper';
+import { NotionClientWrapper } from './notion-client.wrapper';
+import { NotionPersistenceModule } from '../dao/notion/notion-persistence-module';
+import { NotionClientInitializer } from './notion-client.initializer';
+
+export function notionClientInit(notionClientInitializer: NotionClientInitializer) {
+    return notionClientInitializer.notionClientFactory();
+}
 
 @Module({
     controllers: [
@@ -12,11 +20,24 @@ import { NotionConfigController } from './notion-config.controller';
         NotionConfigController,
     ],
     providers: [
-        NotionService,
+        NotionConfigService,
         NotionConfigMapper,
+
+        NotionService,
+        NotionDatabaseRepository,
+        NotionDatabaseMapper,
+
+        NotionClientInitializer,
+
+        {
+            provide: NotionClientWrapper,
+            useFactory: notionClientInit,
+            inject: [NotionClientInitializer],
+            scope: Scope.REQUEST,
+        },
     ],
     imports: [
-        TypeOrmModule.forFeature([NotionConfigEntity]),
+        NotionPersistenceModule,
     ]
 })
 export class NotionModule {}

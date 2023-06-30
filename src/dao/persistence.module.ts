@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { YoutubeUserEntity } from './entity/youtube-user.entity';
-import { NotionConfigEntity } from './entity/notion-config.entity';
+import { NotionConfigEntity } from './notion/entity/notion-config.entity';
 
 const moduleEntities: any[] = [
     YoutubeUserEntity,

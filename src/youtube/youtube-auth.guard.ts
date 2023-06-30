@@ -5,6 +5,7 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import { YoutubeAuthService } from './youtube-auth.service';
+import { isNullOrUndefined } from '../util/util';
 
 @Injectable()
 export class YoutubeAuthGuard implements CanActivate {
@@ -13,7 +14,7 @@ export class YoutubeAuthGuard implements CanActivate {
     async canActivate(context: ExecutionContext) {
         const userFound = await this.youtubeAuthService.getCurrentUser();
 
-        if (!userFound) {
+        if (isNullOrUndefined(userFound)) {
             throw new UnauthorizedException();
         } else {
             return true;

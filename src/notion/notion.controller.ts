@@ -1,5 +1,6 @@
-import { Controller, Get, Request } from '@nestjs/common';
+import { Controller, Get, Post } from '@nestjs/common';
 import { NotionService } from './notion.service';
+import { NotionDatabase } from '../dao/notion/entity/notion-database.entity';
 
 @Controller('notion')
 export class NotionController {
@@ -7,8 +8,13 @@ export class NotionController {
     constructor(private readonly notionService: NotionService) {
     }
 
-    @Get('test')
-    test(@Request() req: any): any {
-        return this.notionService.test();
+    @Get('mediaLibrary')
+    getMediaLibrary(): Promise<NotionDatabase | null> {
+        return this.notionService.getMediaLibrary();
+    }
+
+    @Post('mediaLibrary')
+    postMediaLibrary(): Promise<NotionDatabase> {
+        return this.notionService.generateMediaLibrary();
     }
 }
