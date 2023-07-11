@@ -1,22 +1,24 @@
 import { Module } from '@nestjs/common';
 import { YoutubeAuthService } from './youtube-auth.service';
 import { YoutubeAuthController } from './youtube-auth.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { YoutubeUserEntity } from '../dao/entity/youtube-user.entity';
-import { YoutubeUserMapper } from '../dao/mapper/youtube-user.mapper';
 import { YoutubeAuthGuard } from './youtube-auth.guard';
+import { YoutubeController } from './youtube.controller';
+import { YoutubeService } from './youtube.service';
+import { YoutubePersistenceModule } from '../dao/youtube/youtube-persistence-module';
 
 @Module({
+    imports: [
+        YoutubePersistenceModule,
+    ],
     controllers: [
         YoutubeAuthController,
+        YoutubeController,
     ],
     providers: [
         YoutubeAuthService,
-        YoutubeUserMapper,
         YoutubeAuthGuard,
+
+        YoutubeService,
     ],
-    imports: [
-        TypeOrmModule.forFeature([YoutubeUserEntity]),
-    ]
 })
-export class YoutubeAuthModule {}
+export class YoutubeModule {}

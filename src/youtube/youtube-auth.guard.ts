@@ -17,6 +17,10 @@ export class YoutubeAuthGuard implements CanActivate {
         if (isNullOrUndefined(userFound)) {
             throw new UnauthorizedException();
         } else {
+            const request = context.switchToHttp().getRequest();
+
+            request.youtubeUser = userFound;
+
             return true;
         }
     }
