@@ -27,7 +27,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "@nestjs/typeorm": "^9.0.1",
     "@notionhq/client": "^2.2.5",
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.3.1",
     "google-auth-library": "^8.7.0",
     "googleapis": "^118.0.0",
     "luxon": "^3.3.0",

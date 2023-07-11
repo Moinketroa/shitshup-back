@@ -1,29 +1,23 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { YoutubeUserEntity } from '../dao/entity/youtube-user.entity';
+import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
 import { Repository } from 'typeorm';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import * as process from 'process';
 import { YoutubeUser } from './model/youtube-user.model';
-import { YoutubeUserMapper } from '../dao/mapper/youtube-user.mapper';
-import { isDefined } from '../util/util';
+import { YoutubeUserMapper } from '../dao/youtube/mapper/youtube-user.mapper';
+import { isDefined, isNullOrUndefined } from '../util/util';
 
 @Injectable()
 export class YoutubeAuthService {
-    private oAuth2Client: OAuth2Client;
 
     private readonly youtubeScopes: string[];
 
     constructor(
+        private readonly oAuth2Client: OAuth2Client,
         private readonly youtubeUserMapper: YoutubeUserMapper,
         @InjectRepository(YoutubeUserEntity) private readonly youtubeUserRepository: Repository<YoutubeUserEntity>,
     ) {
-        this.oAuth2Client = new OAuth2Client(
-            process.env.GOOGLE_CLIENT_ID,
-            process.env.GOOGLE_CLIENT_SECRET,
-            process.env.GOOGLE_REDIRECT_URL,
-        );
-
         this.youtubeScopes = JSON.parse(process.env.GOOGLE_SCOPES!);
     }
 
@@ -110,6 +104,25 @@ export class YoutubeAuthService {
                 this.youtubeUserMapper.mapToEntity(youtubeUser),
             );
             return this.youtubeUserRepository.save(newUser);
+        }
+    }
+
+    updateUserPlaylists(
+        youtubeUser: YoutubeUser,
+        pendingPlaylistId: string,
+        processedPlaylistId: string,
+        waitingPlaylistId: string,
+    ): Promise<any> {
+        const youtubeUserUpdate: Partial<YoutubeUserEntity> = {
+            pendingPlaylistId,
+            processedPlaylistId,
+            waitingPlaylistId,
+        };
+
+        if (isNullOrUndefined(youtubeUser.id)) {
+            throw new NotFoundException();
+        } else {
+            return this.youtubeUserRepository.update(youtubeUser.id, youtubeUserUpdate);
         }
     }
 }

@@ -19,4 +19,13 @@ export class YoutubeUserEntity {
 
     @Column()
     photoUrl: string;
+
+    @Column({ nullable: true })
+    pendingPlaylistId: string;
+
+    @Column({ nullable: true })
+    processedPlaylistId: string;
+
+    @Column({ nullable: true })
+    waitingPlaylistId: string;
 }

@@ -6,4 +6,7 @@ export class YoutubeUser {
     lastName: string;
     displayName: string;
     photoUrl: string;
+    pendingPlaylistId: string;
+    processedPlaylistId: string;
+    waitingPlaylistId: string;
 }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { YoutubeUser } from '../../youtube/model/youtube-user.model';
+import { YoutubeUser } from '../../../youtube/model/youtube-user.model';
 import { YoutubeUserEntity } from '../entity/youtube-user.entity';
 
 @Injectable()
@@ -24,6 +24,9 @@ export class YoutubeUserMapper {
             email: youtubeUserEntity.email,
             photoUrl: youtubeUserEntity.photoUrl,
             displayName: this.buildDisplayName(youtubeUserEntity),
+            pendingPlaylistId: youtubeUserEntity.pendingPlaylistId,
+            processedPlaylistId: youtubeUserEntity.processedPlaylistId,
+            waitingPlaylistId: youtubeUserEntity.waitingPlaylistId,
         };
     }
 
