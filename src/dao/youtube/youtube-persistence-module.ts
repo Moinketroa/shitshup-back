@@ -8,6 +8,8 @@ import { ModuleConfigService } from '../../module-config.service';
 import { OAuth2Client } from 'google-auth-library';
 import { GoogleApis } from 'googleapis';
 import { YoutubeClient } from './type/youtube-client.type';
+import { YoutubePlaylistPreviewMapper } from './mapper/youtube-playlist-preview.mapper';
+import { YoutubePlaylistItemMapper } from './mapper/youtube-playlist-item.mapper';
 
 export function oAuth2ClientInit(moduleConfigServiceConfig: ModuleConfigService) {
     const env = moduleConfigServiceConfig.config;
@@ -33,6 +35,8 @@ export function youtubeClientInit(oAuth2Client: OAuth2Client) {
     ],
     providers: [
         YoutubePlaylistMapper,
+        YoutubePlaylistPreviewMapper,
+        YoutubePlaylistItemMapper,
         YoutubeUserMapper,
 
         YoutubePlaylistRepository,

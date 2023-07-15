@@ -4,6 +4,7 @@ import { YoutubeUser } from './model/youtube-user.model';
 import { YoutubeShitshupPlaylists } from '../dao/youtube/entity/youtube-playlist.entity';
 import { isNullOrUndefined } from '../util/util';
 import { YoutubeAuthService } from './youtube-auth.service';
+import { YoutubePlaylistPreview } from '../dao/youtube/entity/youtube-playlist-preview.entity';
 
 @Injectable()
 export class YoutubeService {
@@ -33,5 +34,9 @@ export class YoutubeService {
         } else {
             return youtubePlaylists;
         }
+    }
+
+    getPendingPlaylistPreview(youtubeUser: YoutubeUser): Promise<YoutubePlaylistPreview | null> {
+        return this.youtubePlaylistRepository.getPendingPlaylistPreview(youtubeUser);
     }
 }

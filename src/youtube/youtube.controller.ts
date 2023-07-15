@@ -4,6 +4,7 @@ import { YoutubeService } from './youtube.service';
 import { YoutubeUserParam } from './youtube-user.decorator';
 import { YoutubeUser } from './model/youtube-user.model';
 import { YoutubeShitshupPlaylists } from '../dao/youtube/entity/youtube-playlist.entity';
+import { YoutubePlaylistPreview } from '../dao/youtube/entity/youtube-playlist-preview.entity';
 
 @Controller('youtube')
 @UseGuards(YoutubeAuthGuard)
@@ -20,5 +21,10 @@ export class YoutubeController {
     @Post('playlists')
     postPlaylists(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<YoutubeShitshupPlaylists> {
         return this.youtubeService.generatePlaylists(youtubeUser);
+    }
+
+    @Get('pending/preview')
+    getPendingPreview(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<YoutubePlaylistPreview | null> {
+        return this.youtubeService.getPendingPlaylistPreview(youtubeUser);
     }
 }
