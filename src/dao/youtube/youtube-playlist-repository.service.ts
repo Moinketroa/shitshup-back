@@ -1,10 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { YoutubeUser } from '../../youtube/model/youtube-user.model';
 import { isNullOrUndefined } from '../../util/util';
-import { YoutubeClient, YoutubeClientPlaylist, YoutubeClientPlaylistResponse } from './type/youtube-client.type';
+import {
+    YoutubeClient,
+    YoutubeClientPlaylist,
+    YoutubeClientPlaylistItemResponse,
+    YoutubeClientPlaylistResponse,
+} from './type/youtube-client.type';
 import { YoutubePlaylistMapper } from './mapper/youtube-playlist.mapper';
 import { YoutubeShitshupPlaylists } from './entity/youtube-playlist.entity';
 import * as process from 'process';
+import { YoutubePlaylistPreviewMapper } from './mapper/youtube-playlist-preview.mapper';
+import { YoutubePlaylistPreview } from './entity/youtube-playlist-preview.entity';
 
 @Injectable()
 export class YoutubePlaylistRepository {
@@ -16,8 +23,11 @@ export class YoutubePlaylistRepository {
     private readonly DEFAULT_WAITING_PLAYLIST_NAME: string;
     private readonly DEFAULT_WAITING_PLAYLIST_DESCRIPTION: string;
 
-    constructor(private readonly youtubeClient: YoutubeClient,
-                private readonly youtubePlaylistMapper: YoutubePlaylistMapper) {
+    constructor(
+        private readonly youtubeClient: YoutubeClient,
+        private readonly youtubePlaylistMapper: YoutubePlaylistMapper,
+        private readonly youtubePlaylistPreviewMapper: YoutubePlaylistPreviewMapper,
+    ) {
         this.DEFAULT_PENDING_PLAYLIST_NAME = process.env.YOUTUBE_DEFAULT_PENDING_PLAYLIST_NAME || '';
         this.DEFAULT_PENDING_PLAYLIST_DESCRIPTION = process.env.YOUTUBE_DEFAULT_PENDING_PLAYLIST_DESCRIPTION || '';
         this.DEFAULT_PROCESSED_PLAYLIST_NAME = process.env.YOUTUBE_DEFAULT_PROCESSED_PLAYLIST_NAME || '';
@@ -98,7 +108,7 @@ export class YoutubePlaylistRepository {
         const [
             pendingPlaylist,
             processedPlaylist,
-            waitingPlaylist
+            waitingPlaylist,
         ] = await Promise.all([
             this.createYoutubePlaylist(
                 this.DEFAULT_PENDING_PLAYLIST_NAME,
@@ -129,5 +139,26 @@ export class YoutubePlaylistRepository {
         });
 
         return createYoutubePlaylistsResponse.data;
+    }
+
+    async getPendingPlaylistPreview(youtubeUser: YoutubeUser): Promise<YoutubePlaylistPreview | null> {
+        const pendingPlaylistId = youtubeUser.pendingPlaylistId;
+
+        if (!pendingPlaylistId) {
+            return null;
+        } else {
+            const playListPreviewResponse: YoutubeClientPlaylistItemResponse = await this.getPlaylistPreview(pendingPlaylistId);
+
+            return this.youtubePlaylistPreviewMapper.map(pendingPlaylistId, playListPreviewResponse);
+        }
+    }
+
+    private async getPlaylistPreview(playlistId: string): Promise<YoutubeClientPlaylistItemResponse> {
+        const playListPreviewResponse = await this.youtubeClient.playlistItems.list({
+            part: [ 'snippet' ],
+            playlistId,
+        });
+
+        return playListPreviewResponse.data;
     }
 }
