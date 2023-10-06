@@ -27,4 +27,9 @@ export class YoutubeController {
     getPendingPreview(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<YoutubePlaylistPreview | null> {
         return this.youtubeService.getPendingPlaylistPreview(youtubeUser);
     }
+
+    @Get('process/pending')
+    processPending(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<any> {
+        return this.youtubeService.processPending(youtubeUser);
+    }
 }
