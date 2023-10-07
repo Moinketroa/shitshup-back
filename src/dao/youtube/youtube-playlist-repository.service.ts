@@ -13,6 +13,8 @@ import * as process from 'process';
 import { YoutubePlaylistPreviewMapper } from './mapper/youtube-playlist-preview.mapper';
 import { YoutubePlaylistPreview } from './entity/youtube-playlist-preview.entity';
 import { pull } from 'lodash';
+import { YoutubePart } from './type/youtube-part.enum';
+import { YoutubeRessourceKind } from './type/youtube-ressource-kind.enum';
 
 @Injectable()
 export class YoutubePlaylistRepository {
@@ -70,7 +72,7 @@ export class YoutubePlaylistRepository {
         ];
 
         const youtubePlaylistsResponse = await this.youtubeClient.playlists.list({
-            part: [ 'snippet' ],
+            part: [YoutubePart.SNIPPET],
             id: youtubePlaylistsIds,
             maxResults: youtubePlaylistsIds.length,
         });
@@ -130,7 +132,7 @@ export class YoutubePlaylistRepository {
 
     private async createYoutubePlaylist(title: string, description: string): Promise<YoutubeClientPlaylist> {
         const createYoutubePlaylistsResponse = await this.youtubeClient.playlists.insert({
-            part: [ 'snippet' ],
+            part: [YoutubePart.SNIPPET],
             requestBody: {
                 snippet: {
                     title,
@@ -163,13 +165,39 @@ export class YoutubePlaylistRepository {
 
         console.log(`[YoutubePlaylistRepository] Deleting video(s) from playlist ${playlistId}`);
         for (const playlistItem of playlistItemsToDelete) {
-            await this.removePlaylistItem(playlistItem);
+            await this.removePlaylistItem(playlistId, playlistItem);
         }
+    }
+
+    async addIdsToPlaylist(playlistId: string, idsToInsert: string[]): Promise<void> {
+        console.log(`[YoutubePlaylistRepository] Adding video(s) to playlist ${playlistId}`);
+        for (const idToInsert of idsToInsert) {
+            await this.addIdToPlaylist(playlistId, idToInsert);
+        }
+    }
+
+    async addIdToPlaylist(playlistId: string, idToInsert: string): Promise<void> {
+        console.log(`[YoutubePlaylistRepository] Adding video ${idToInsert} to playlist ${playlistId}`);
+
+        await this.youtubeClient.playlistItems.insert({
+            part: [YoutubePart.SNIPPET],
+            requestBody: {
+                snippet: {
+                    playlistId: playlistId,
+                    resourceId: {
+                        kind: YoutubeRessourceKind.VIDEO,
+                        videoId: idToInsert,
+                    },
+                },
+            },
+        });
+
+        console.log(`[YoutubePlaylistRepository] Video ${idToInsert} added`);
     }
 
     private async getPlaylistPreview(playlistId: string): Promise<YoutubeClientPlaylistItemResponse> {
         const playListPreviewResponse = await this.youtubeClient.playlistItems.list({
-            part: [ 'snippet' ],
+            part: [YoutubePart.SNIPPET],
             playlistId,
         });
 
@@ -178,7 +206,7 @@ export class YoutubePlaylistRepository {
 
     private async getPlaylistPage(playlistId: string, pageToken?: string): Promise<YoutubeClientPlaylistItemResponse> {
         const playListPageResponse = await this.youtubeClient.playlistItems.list({
-            part: [ 'contentDetails' ],
+            part: [YoutubePart.CONTENT_DETAILS],
             playlistId,
             maxResults: 50,
             pageToken,
@@ -221,8 +249,10 @@ export class YoutubePlaylistRepository {
         return playlistItemsToDelete;
     }
 
-    private async removePlaylistItem(playlistItem: YoutubeClientPlaylistItem): Promise<void> {
-        console.log(`[YoutubePlaylistRepository] Deleting video ${playlistItem.contentDetails?.videoId}`);
+    private async removePlaylistItem(playlistId: string, playlistItem: YoutubeClientPlaylistItem): Promise<void> {
+        console.log(
+            `[YoutubePlaylistRepository] Deleting video ${playlistItem.contentDetails?.videoId} from playlist ${playlistId}`,
+        );
         await this.youtubeClient.playlistItems.delete({
             id: playlistItem.id!,
         });
