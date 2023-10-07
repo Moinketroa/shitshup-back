@@ -3,7 +3,7 @@ import { YoutubeUser } from '../../youtube/model/youtube-user.model';
 import { isNullOrUndefined } from '../../util/util';
 import {
     YoutubeClient,
-    YoutubeClientPlaylist,
+    YoutubeClientPlaylist, YoutubeClientPlaylistItem,
     YoutubeClientPlaylistItemResponse,
     YoutubeClientPlaylistResponse,
 } from './type/youtube-client.type';
@@ -12,6 +12,7 @@ import { YoutubeShitshupPlaylists } from './entity/youtube-playlist.entity';
 import * as process from 'process';
 import { YoutubePlaylistPreviewMapper } from './mapper/youtube-playlist-preview.mapper';
 import { YoutubePlaylistPreview } from './entity/youtube-playlist-preview.entity';
+import { pull } from 'lodash';
 
 @Injectable()
 export class YoutubePlaylistRepository {
@@ -153,6 +154,19 @@ export class YoutubePlaylistRepository {
         }
     }
 
+    async deleteIdsFromPlaylist(playlistId: string, idsToDelete: string[]): Promise<void> {
+        console.log(`[YoutubePlaylistRepository] Searching for ${idsToDelete.length} videos to delete`);
+        const playlistItemsToDelete: YoutubeClientPlaylistItem[] = await this.fetchPlaylistItemToDelete(
+            playlistId,
+            idsToDelete,
+        );
+
+        console.log(`[YoutubePlaylistRepository] Deleting video(s) from playlist ${playlistId}`);
+        for (const playlistItem of playlistItemsToDelete) {
+            await this.removePlaylistItem(playlistItem);
+        }
+    }
+
     private async getPlaylistPreview(playlistId: string): Promise<YoutubeClientPlaylistItemResponse> {
         const playListPreviewResponse = await this.youtubeClient.playlistItems.list({
             part: [ 'snippet' ],
@@ -160,5 +174,58 @@ export class YoutubePlaylistRepository {
         });
 
         return playListPreviewResponse.data;
+    }
+
+    private async getPlaylistPage(playlistId: string, pageToken?: string): Promise<YoutubeClientPlaylistItemResponse> {
+        const playListPageResponse = await this.youtubeClient.playlistItems.list({
+            part: [ 'contentDetails' ],
+            playlistId,
+            maxResults: 50,
+            pageToken,
+        });
+
+        return playListPageResponse.data;
+    }
+
+    private async fetchPlaylistItemToDelete(playlistId: string, idsToDelete: string[]): Promise<YoutubeClientPlaylistItem[]> {
+        const idsToDeleteArray = [...idsToDelete];
+        const playlistItemsToDelete: YoutubeClientPlaylistItem[] = [];
+
+        let playlistPage: YoutubeClientPlaylistItemResponse;
+        let playlistItems: YoutubeClientPlaylistItem[];
+        let nextPageToken: string | null | undefined = undefined;
+
+        do {
+            console.log(`[YoutubePlaylistRepository] Fetching playlist page`);
+            playlistPage = await this.getPlaylistPage(playlistId, nextPageToken);
+
+            playlistItems = playlistPage.items ?? [];
+            nextPageToken = playlistPage.nextPageToken;
+
+            for (let i = 0; i < playlistItems.length; i++) {
+                const playlistItem: YoutubeClientPlaylistItem = playlistItems[i];
+                const videoId = <string>playlistItem?.contentDetails?.videoId;
+
+                if (idsToDeleteArray.includes(videoId)) {
+                    playlistItemsToDelete.push(playlistItem);
+
+                    pull(idsToDeleteArray, videoId);
+
+                    if (idsToDeleteArray.length === 0) {
+                        break;
+                    }
+                }
+            }
+        } while (!!nextPageToken && idsToDeleteArray.length !== 0);
+
+        return playlistItemsToDelete;
+    }
+
+    private async removePlaylistItem(playlistItem: YoutubeClientPlaylistItem): Promise<void> {
+        console.log(`[YoutubePlaylistRepository] Deleting video ${playlistItem.contentDetails?.videoId}`);
+        await this.youtubeClient.playlistItems.delete({
+            id: playlistItem.id!,
+        });
+        console.log(`[YoutubePlaylistRepository] Video ${playlistItem.contentDetails?.videoId} deleted`);
     }
 }
