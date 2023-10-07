@@ -55,11 +55,13 @@ export class YoutubeService {
         );
 
         if (allIdsToProcess.length === 0) {
+            console.log('[PROCESS_PENDING] No videos to process. Process ended.');
             return [];
         }
 
         const notDownloadedIds = await this.stepDownloadPlaylist(token, allIdsToProcess);
 
+        console.log('[PROCESS_PENDING] Process ended.');
         return notDownloadedIds;
     }
 
@@ -70,9 +72,28 @@ export class YoutubeService {
             playlistId,
         );
 
-        // TODO: STEP 1
+        console.log('[PROCESS_PENDING][STEP 1] Check for explicit duplicates');
+        const allIdsNotDownloaded = await this.youtubeDownloaderPythonRepository.getIdNotDownloaded(
+            token,
+            allIdsToProcess,
+        );
 
-        return allIdsToProcess;
+        const allExplicitDuplicatesIds = allIdsToProcess.filter(
+            (idToProcess) => !allIdsNotDownloaded.includes(idToProcess),
+        );
+
+        if (allExplicitDuplicatesIds.length !== 0) {
+            console.log(
+                '[PROCESS_PENDING][STEP 1] Explicit duplicates found. Excluding from processing and deleting from Pending playlist...',
+            );
+            await this.youtubePlaylistRepository.deleteIdsFromPlaylist(playlistId, allExplicitDuplicatesIds);
+            console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates deleted from playlist');
+        } else {
+            console.log('[PROCESS_PENDING][STEP 1] No Explicit duplicates found.');
+        }
+
+        console.log('[PROCESS_PENDING][STEP 1] List of videos to process established.');
+        return allIdsNotDownloaded;
     }
 
     private async stepDownloadPlaylist(token: string, allIdsToProcess: string[]): Promise<string[]> {

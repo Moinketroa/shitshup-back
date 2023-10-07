@@ -34,9 +34,9 @@ export class YoutubeDownloaderPythonRepository {
             console.warn(`[LIST_ID] Error during List ids of playlist id ${playlistId} : `, stderr);
         }
 
-        const idsOfPlaylist = <string>stdout;
+        const idsOfPlaylist = (<string>stdout)?.trim();
 
-        return idsOfPlaylist?.trim().length === 0
+        return idsOfPlaylist?.length === 0
             ? []
             : idsOfPlaylist.split('\n');
     }
@@ -74,9 +74,9 @@ export class YoutubeDownloaderPythonRepository {
             console.warn(`[CHECK_DIFF] Error during Check diff : `, stderr);
         }
 
-        const idsNotDownloaded = <string>stdout;
+        const idsNotDownloaded = (<string>stdout)?.trim();
 
-        return idsNotDownloaded?.trim().length === 0
+        return idsNotDownloaded?.length === 0
             ? []
             : idsNotDownloaded.split('\n');
     }
