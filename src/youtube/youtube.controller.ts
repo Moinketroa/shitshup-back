@@ -30,6 +30,6 @@ export class YoutubeController {
 
     @Get('process/pending')
     processPending(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<any> {
-        return this.youtubeService.processPending(youtubeUser);
+        return this.youtubeService.triggerProcessPending(youtubeUser);
     }
 }

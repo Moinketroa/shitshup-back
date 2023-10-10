@@ -41,7 +41,7 @@ export class YoutubeDownloaderPythonRepository {
             : idsOfPlaylist.split('\n');
     }
 
-    async downloadPlaylist(token: string, allPlaylistIds: string[]): Promise<void> {
+    async downloadPlaylist(token: string, allPlaylistIds: string[]): Promise<string> {
         const args = [
             token,
             this.DOWNLOAD_OUTPUT_DIRECTORY_PATH,
@@ -50,12 +50,17 @@ export class YoutubeDownloaderPythonRepository {
         ];
 
         const {
+            stdout,
             stderr ,
         } = await this.execScript(this.DOWNLOAD_PLAYLIST_SCRIPT_PATH, ...args);
 
         if (stderr) {
             console.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
         }
+
+        const filesDownloadedInfoFilepath = (<string>stdout)?.trim();
+
+        return filesDownloadedInfoFilepath;
     }
 
     async getIdNotDownloaded(token: string, allPlaylistIds: string[]): Promise<string[]> {
