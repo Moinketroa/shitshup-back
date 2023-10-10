@@ -16,11 +16,15 @@ downloadArchivePath="$3"
 # Generate a timestamp
 timestamp=$(date +%Y%m%d%H%M%S)
 # Create a temporary text file for batch-file
-tempfile=$(mktemp "temp_file.download_playlist.${timestamp}.txt")
+tempBatchFile=$(mktemp "temp_file.download_playlist.${timestamp}.txt")
+tempOutputPrintFile=$(mktemp "temp_file.output_download_playlist.${timestamp}.txt")
 # Print all IDs argument, one per line
 for arg in "${@:4}"; do
   echo "$arg"
-done > "$tempfile"
+done > "$tempBatchFile"
+
+# Output Print File Template
+outputPrintTemplate="id=%(id)s track=%(track)s artist=%(artist)s filepath=%(filepath)s"
 
 # Download all videos in batch file.
 yt-dlp \
@@ -33,7 +37,10 @@ yt-dlp \
 --quiet \
 --download-archive "$downloadArchivePath" \
 --no-warnings \
---batch-file "$tempfile" || true
+--print-to-file after_move:"$outputPrintTemplate" "$tempOutputPrintFile" \
+--batch-file "$tempBatchFile" || true
 
 # Remove the temporary batch-file
-rm "$tempfile"
+rm "$tempBatchFile"
+
+echo "$tempOutputPrintFile"

@@ -5,12 +5,12 @@ import { YoutubeAuthGuard } from './youtube-auth.guard';
 import { YoutubeController } from './youtube.controller';
 import { YoutubeService } from './youtube.service';
 import { YoutubePersistenceModule } from '../dao/youtube/youtube-persistence-module';
-import { YoutubeDownloaderPythonModule } from '../dao/youtube-downloader-python/youtube-downloader-python-module';
+import { ProcessPendingModule } from './process-pending/process-pending.module';
 
 @Module({
     imports: [
         YoutubePersistenceModule,
-        YoutubeDownloaderPythonModule,
+        ProcessPendingModule,
     ],
     controllers: [
         YoutubeAuthController,

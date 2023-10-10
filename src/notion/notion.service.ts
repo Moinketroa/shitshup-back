@@ -1,4 +1,4 @@
-import { NotionDatabaseRepository } from '../dao/notion/notion-database-repository.service';
+import { NotionDatabaseRepository } from '../dao/notion/notion-database.repository';
 import { NotionDatabase } from '../dao/notion/entity/notion-database.entity';
 import { Injectable } from '@nestjs/common';
 import { NotionConfigService } from './config/notion-config.service';
