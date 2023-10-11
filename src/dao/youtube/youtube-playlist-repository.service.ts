@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { YoutubeUser } from '../../youtube/model/youtube-user.model';
+import { YoutubeUser } from '../../auth/youtube-auth/model/youtube-user.model';
 import { isNullOrUndefined } from '../../util/util';
 import {
     YoutubeClient,

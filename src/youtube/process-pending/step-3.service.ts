@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { YoutubeUser } from '../model/youtube-user.model';
+import { YoutubeUser } from '../../auth/youtube-auth/model/youtube-user.model';
 import {
     YoutubeDownloaderPythonRepository
 } from '../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';

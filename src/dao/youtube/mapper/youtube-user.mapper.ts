@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { YoutubeUser } from '../../../youtube/model/youtube-user.model';
+import { YoutubeUser } from '../../../auth/youtube-auth/model/youtube-user.model';
 import { YoutubeUserEntity } from '../entity/youtube-user.entity';
 
 @Injectable()

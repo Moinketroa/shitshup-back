@@ -6,6 +6,7 @@ import {
     YoutubeDownloaderPythonFileInfoRepository
 } from '../../dao/youtube-downloader-python/youtube-downloader-python-file-info.repository';
 import { Step2Results } from './model/step-2-results.model';
+import * as fs from 'fs';
 
 @Injectable()
 export class Step2Service {
@@ -21,6 +22,7 @@ export class Step2Service {
 
         console.log('[PROCESS_PENDING][STEP 2] Parsing downloaded videos infos');
         const fileInfos = await this.youtubeDownloaderPythonFileInfoRepository.getFileInfos(filesDownloadedInfoFilepath);
+        this.deleteFile(filesDownloadedInfoFilepath);
 
         const notDownloaded = await this.youtubeDownloaderPythonRepository.getIdNotDownloaded(token, allIdsToProcess);
 
@@ -34,6 +36,16 @@ export class Step2Service {
             idsNotDownloaded: notDownloaded,
             fileInfos: fileInfos,
         }
+    }
+
+    private deleteFile(filePath: string): void {
+        fs.unlink(filePath, (err) => {
+            if (err) {
+                console.error('[PROCESS_PENDING][STEP 2] Error while deleting videos info temp file');
+                throw err;
+            }
+            console.log('[PROCESS_PENDING][STEP 2] Videos info temp file deleted');
+        });
     }
 
 }

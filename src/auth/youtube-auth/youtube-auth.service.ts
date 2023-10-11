@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
+import { YoutubeUserEntity } from '../../dao/youtube/entity/youtube-user.entity';
 import { Repository } from 'typeorm';
 import { OAuth2Client, TokenPayload } from 'google-auth-library';
 import * as process from 'process';
 import { YoutubeUser } from './model/youtube-user.model';
-import { YoutubeUserMapper } from '../dao/youtube/mapper/youtube-user.mapper';
-import { isDefined, isNullOrUndefined } from '../util/util';
+import { YoutubeUserMapper } from '../../dao/youtube/mapper/youtube-user.mapper';
+import { isDefined, isNullOrUndefined } from '../../util/util';
+import { User } from '../model/user.model';
 
 @Injectable()
 export class YoutubeAuthService {
@@ -35,7 +36,13 @@ export class YoutubeAuthService {
 
         this.oAuth2Client.setCredentials(credentials);
 
-        return this.login(credentials.id_token!);
+        const youtubeUser = await this.login(credentials.id_token!);
+
+        return <User>{
+            email: youtubeUser.email!,
+            googleAccessToken: credentials.access_token!,
+            googleRefreshToken: credentials.refresh_token!,
+        };
     }
 
     async logout() {

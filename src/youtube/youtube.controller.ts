@@ -1,13 +1,13 @@
 import { Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { YoutubeAuthGuard } from './youtube-auth.guard';
+import { AuthGuard } from '../auth/auth.guard';
 import { YoutubeService } from './youtube.service';
-import { YoutubeUserParam } from './youtube-user.decorator';
-import { YoutubeUser } from './model/youtube-user.model';
+import { YoutubeUserParam } from '../auth/youtube-auth/youtube-user.decorator';
+import { YoutubeUser } from '../auth/youtube-auth/model/youtube-user.model';
 import { YoutubeShitshupPlaylists } from '../dao/youtube/entity/youtube-playlist.entity';
 import { YoutubePlaylistPreview } from '../dao/youtube/entity/youtube-playlist-preview.entity';
 
 @Controller('youtube')
-@UseGuards(YoutubeAuthGuard)
+@UseGuards(AuthGuard)
 export class YoutubeController {
 
     constructor(private readonly youtubeService: YoutubeService) {
