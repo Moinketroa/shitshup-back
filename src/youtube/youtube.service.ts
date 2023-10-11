@@ -1,16 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { YoutubePlaylistRepository } from '../dao/youtube/youtube-playlist-repository.service';
-import { YoutubeUser } from './model/youtube-user.model';
+import { YoutubeUser } from '../auth/youtube-auth/model/youtube-user.model';
 import { YoutubeShitshupPlaylists } from '../dao/youtube/entity/youtube-playlist.entity';
 import { isNullOrUndefined } from '../util/util';
-import { YoutubeAuthService } from './youtube-auth.service';
+import { YoutubeAuthService } from '../auth/youtube-auth/youtube-auth.service';
 import { YoutubePlaylistPreview } from '../dao/youtube/entity/youtube-playlist-preview.entity';
-import { YoutubeDownloaderPythonRepository } from '../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
 import { OAuth2Client } from 'google-auth-library';
-import {
-    YoutubeDownloaderPythonFileInfoRepository
-} from '../dao/youtube-downloader-python/youtube-downloader-python-file-info.repository';
-import { EssentiaService } from '../essentia/essentia.service';
 import { ProcessPendingService } from './process-pending/process-pending.service';
 
 @Injectable()

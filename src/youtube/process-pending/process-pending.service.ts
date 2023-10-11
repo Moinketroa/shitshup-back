@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { YoutubeUser } from '../model/youtube-user.model';
+import { YoutubeUser } from '../../auth/youtube-auth/model/youtube-user.model';
 import { Step1Service } from './step-1.service';
 import { Step2Service } from './step-2.service';
 import { Step3Service } from './step-3.service';

@@ -1,25 +1,26 @@
 import { Module } from '@nestjs/common';
-import { YoutubeAuthService } from './youtube-auth.service';
-import { YoutubeAuthController } from './youtube-auth.controller';
-import { YoutubeAuthGuard } from './youtube-auth.guard';
 import { YoutubeController } from './youtube.controller';
 import { YoutubeService } from './youtube.service';
 import { YoutubePersistenceModule } from '../dao/youtube/youtube-persistence-module';
 import { ProcessPendingModule } from './process-pending/process-pending.module';
+import { AuthModule } from '../auth/auth.module';
+import { OAuth2ClientModule } from '../auth/o-auth-2-client.module';
+import { YoutubeAuthModule } from '../auth/youtube-auth/youtube-auth.module';
 
 @Module({
     imports: [
         YoutubePersistenceModule,
         ProcessPendingModule,
+
+        AuthModule,
+        YoutubeAuthModule,
+
+        OAuth2ClientModule,
     ],
     controllers: [
-        YoutubeAuthController,
         YoutubeController,
     ],
     providers: [
-        YoutubeAuthService,
-        YoutubeAuthGuard,
-
         YoutubeService,
     ],
 })

@@ -4,22 +4,12 @@ import { YoutubeUserMapper } from './mapper/youtube-user.mapper';
 import { YoutubePlaylistRepository } from './youtube-playlist-repository.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { YoutubeUserEntity } from './entity/youtube-user.entity';
-import { ModuleConfigService } from '../../module-config.service';
 import { OAuth2Client } from 'google-auth-library';
 import { GoogleApis } from 'googleapis';
 import { YoutubeClient } from './type/youtube-client.type';
 import { YoutubePlaylistPreviewMapper } from './mapper/youtube-playlist-preview.mapper';
 import { YoutubePlaylistItemMapper } from './mapper/youtube-playlist-item.mapper';
-
-export function oAuth2ClientInit(moduleConfigServiceConfig: ModuleConfigService) {
-    const env = moduleConfigServiceConfig.config;
-
-    return new OAuth2Client(
-        env.GOOGLE_CLIENT_ID,
-        env.GOOGLE_CLIENT_SECRET,
-        env.GOOGLE_REDIRECT_URL,
-    );
-}
+import { OAuth2ClientModule } from '../../auth/o-auth-2-client.module';
 
 export function youtubeClientInit(oAuth2Client: OAuth2Client) {
     const googleClient = new GoogleApis({
@@ -32,6 +22,7 @@ export function youtubeClientInit(oAuth2Client: OAuth2Client) {
 @Module({
     imports: [
         TypeOrmModule.forFeature([YoutubeUserEntity]),
+        OAuth2ClientModule,
     ],
     providers: [
         YoutubePlaylistMapper,
@@ -40,15 +31,6 @@ export function youtubeClientInit(oAuth2Client: OAuth2Client) {
         YoutubeUserMapper,
 
         YoutubePlaylistRepository,
-
-        ModuleConfigService,
-
-        {
-            provide: OAuth2Client,
-            useFactory: oAuth2ClientInit,
-            inject: [ ModuleConfigService ],
-            scope: Scope.DEFAULT,
-        },
 
         {
             provide: YoutubeClient,
@@ -62,7 +44,6 @@ export function youtubeClientInit(oAuth2Client: OAuth2Client) {
 
         YoutubePlaylistRepository,
 
-        OAuth2Client,
         TypeOrmModule.forFeature([YoutubeUserEntity]),
     ],
 })
