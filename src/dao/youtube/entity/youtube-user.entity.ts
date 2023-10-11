@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { UserEntity } from '../../user/entity/user.entity';
 
 @Entity('youtube-users')
 export class YoutubeUserEntity {
@@ -28,4 +29,7 @@ export class YoutubeUserEntity {
 
     @Column({ nullable: true })
     waitingPlaylistId: string;
+
+    @OneToOne(() => UserEntity, (user) => user.youtubeUser)
+    user: UserEntity;
 }

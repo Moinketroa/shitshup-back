@@ -3,5 +3,5 @@ export class User {
     email: string;
     googleAccessToken: string;
     googleRefreshToken: string;
-    jwtToken?: string;
+    youtubeUserId: string;
 }
