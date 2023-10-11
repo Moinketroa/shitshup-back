@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../dao/user/entity/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
+import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
 
 @Module({
     imports: [
@@ -21,7 +22,7 @@ import { AuthGuard } from './auth.guard';
         }),
 
         OAuth2ClientModule,
-        TypeOrmModule.forFeature([UserEntity]),
+        TypeOrmModule.forFeature([UserEntity, YoutubeUserEntity]),
         YoutubeAuthModule,
     ],
     controllers: [

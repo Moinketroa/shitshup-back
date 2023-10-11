@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { YoutubeUserEntity } from '../../youtube/entity/youtube-user.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -15,7 +16,8 @@ export class UserEntity {
     @Column()
     googleRefreshToken: string;
 
-    @Column({ nullable: true })
-    jwtToken: string;
+    @OneToOne(() => YoutubeUserEntity, (youtubeUser) => youtubeUser.user)
+    @JoinColumn()
+    youtubeUser: YoutubeUserEntity;
 
 }

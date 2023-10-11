@@ -2,7 +2,7 @@ import { Controller, Get, HttpStatus, Query, Res, UseGuards } from '@nestjs/comm
 import { YoutubeAuthService } from './youtube-auth/youtube-auth.service';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
-import process from 'process';
+import * as process from 'process';
 import { URL } from 'url';
 import { AuthGuard } from './auth.guard';
 

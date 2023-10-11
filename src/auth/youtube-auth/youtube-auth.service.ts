@@ -39,6 +39,7 @@ export class YoutubeAuthService {
         const youtubeUser = await this.login(credentials.id_token!);
 
         return <User>{
+            youtubeUserId: youtubeUser.id,
             email: youtubeUser.email!,
             googleAccessToken: credentials.access_token!,
             googleRefreshToken: credentials.refresh_token!,
