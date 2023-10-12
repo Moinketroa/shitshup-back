@@ -1,29 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { FileInfo } from '../../dao/youtube-downloader-python/model/file-info.model';
 import { EssentiaService } from '../../essentia/essentia.service';
-import { firstValueFrom, map } from 'rxjs';
+import { firstValueFrom, map, Observable } from 'rxjs';
 import { MusicDataMapper } from './mapper/music-data.mapper';
 import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
+import { AbstractStep } from './abstract-step.class';
+import { ProcessTaskService } from './process-task.service';
+import { TaskService } from '../../task/task.service';
+import { TaskCategory } from '../../task/model/task-category.enum';
 
-@Injectable()
-export class Step5Service {
+@Injectable({
+    scope: Scope.TRANSIENT,
+})
+export class Step5Service extends AbstractStep {
 
-    constructor(private readonly essentiaService: EssentiaService,
+    constructor(processTaskService: ProcessTaskService,
+                taskService: TaskService,
+                private readonly essentiaService: EssentiaService,
                 private readonly musicDataMapper: MusicDataMapper,) {
+        super(processTaskService, taskService);
     }
 
-    stepGetMusicInfos(fileInfos: FileInfo[]): Promise<MusicDataAnalysisResult[]> {
-        const $musicDataAnalysisResults = fileInfos.map(fileInfo => {
-            return this.essentiaService.getMusicData(fileInfo.filePath)
-                .pipe(
-                    map(musicData => (
-                        this.musicDataMapper.toMusicDataAnalysisResult(musicData, fileInfo)
-                    ))
-                )
-        })
+    async stepGetMusicInfos(fileInfos: FileInfo[]): Promise<MusicDataAnalysisResult[]> {
+        await this.initStepTask(TaskCategory.STEP5, 1);
 
+        const result = await this.triggerStepProcess(fileInfos);
+
+        await this.completeStepTask();
+
+        return result;
+    }
+
+    private async triggerStepProcess(fileInfos: FileInfo[]): Promise<MusicDataAnalysisResult[]> {
+        return await this.triggerSubStepAnalyseSimpleMusicData(fileInfos);
+    }
+
+    private async triggerSubStepAnalyseSimpleMusicData(fileInfos: FileInfo[]) {
         console.log('[PROCESS_PENDING][STEP 5] Query Python Server for music data...');
-        return Promise.all($musicDataAnalysisResults.map(obs => firstValueFrom(obs)));
+        const subTask = await this.createSubStepTask(TaskCategory.SUB5_ANALYSE_SIMPLE_MUSIC_DATAS, fileInfos.length);
+
+        return await this.runSubTask(subTask, async () => {
+            const $musicDataAnalysisResults = fileInfos.map(fileInfo => this.buildObservable(fileInfo));
+
+            return Promise.all($musicDataAnalysisResults.map(obs => firstValueFrom(obs)));
+        });
     }
 
+    private buildObservable(fileInfo: FileInfo): Observable<MusicDataAnalysisResult> {
+        return this.essentiaService.getMusicData(fileInfo.filePath)
+            .pipe(
+                map(musicData => (
+                    this.musicDataMapper.toMusicDataAnalysisResult(musicData, fileInfo)
+                ))
+            )
+    }
 }

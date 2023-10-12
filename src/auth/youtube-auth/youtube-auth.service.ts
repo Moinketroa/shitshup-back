@@ -133,4 +133,17 @@ export class YoutubeAuthService {
             return this.youtubeUserRepository.update(youtubeUser.id, youtubeUserUpdate);
         }
     }
+
+    async findYoutubeUser(youtubeUserId: string | undefined): Promise<YoutubeUserEntity | null> {
+        return isDefined(youtubeUserId)
+            ? this.youtubeUserRepository.findOne({
+                  where: {
+                      id: youtubeUserId,
+                  },
+                  relations: {
+                      user: true,
+                  },
+              })
+            : null;
+    }
 }

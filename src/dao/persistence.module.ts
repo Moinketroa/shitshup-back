@@ -3,11 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { YoutubeUserEntity } from './youtube/entity/youtube-user.entity';
 import { NotionConfigEntity } from './notion/entity/notion-config.entity';
 import { UserEntity } from './user/entity/user.entity';
+import { TaskEntity } from './task/entity/task.entity';
 
 const moduleEntities: any[] = [
     YoutubeUserEntity,
     NotionConfigEntity,
     UserEntity,
+    TaskEntity,
 ];
 
 @Module({

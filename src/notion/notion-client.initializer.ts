@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotionConfigRepository } from '../dao/notion/notion-config-repository';
+import { NotionConfigRepository } from '../dao/notion/notion-config.repository';
 import { NotionClientWrapper } from './notion-client.wrapper';
 import { Client as NotionClient } from '@notionhq/client';
 

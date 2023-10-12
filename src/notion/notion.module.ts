@@ -7,7 +7,7 @@ import { NotionService } from './notion.service';
 import { NotionDatabaseRepository } from '../dao/notion/notion-database.repository';
 import { NotionDatabaseMapper } from '../dao/notion/mapper/notion-database.mapper';
 import { NotionClientWrapper } from './notion-client.wrapper';
-import { NotionPersistenceModule } from '../dao/notion/notion-persistence-module';
+import { NotionPersistenceModule } from '../dao/notion/notion-persistence.module';
 import { NotionClientInitializer } from './notion-client.initializer';
 
 export function notionClientInit(notionClientInitializer: NotionClientInitializer) {
