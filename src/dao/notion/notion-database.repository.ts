@@ -5,7 +5,7 @@ import * as process from 'process';
 import { NotionConfigEntity } from './entity/notion-config.entity';
 import { NotionClientWrapper } from '../../notion/notion-client.wrapper';
 import { NotionDatabase } from './entity/notion-database.entity';
-import { NotionConfigRepository } from './notion-config-repository';
+import { NotionConfigRepository } from './notion-config.repository';
 import { notionDatabaseSchema } from './schema/notion-database.schema';
 import { DateTime } from 'luxon';
 

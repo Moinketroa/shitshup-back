@@ -4,7 +4,7 @@ import { NotionConfigMapper } from '../../dao/notion/mapper/notion-config.mapper
 import { ReadNotionConfigDTO } from './model/read-notion-config.dto';
 import { CreateNotionConfigDTO } from './model/create-notion-config.dto';
 import { UpdateNotionConfigDTO } from './model/update-notion-config.dto';
-import { NotionConfigRepository } from '../../dao/notion/notion-config-repository';
+import { NotionConfigRepository } from '../../dao/notion/notion-config.repository';
 import { isNullOrUndefined } from '../../util/util';
 
 @Injectable()

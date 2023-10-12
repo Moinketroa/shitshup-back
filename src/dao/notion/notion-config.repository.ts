@@ -5,7 +5,7 @@ import { isDefined } from '../../util/util';
 import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
-export class NotionConfigRepository extends Repository<NotionConfigEntity>{
+export class NotionConfigRepository extends Repository<NotionConfigEntity> {
 
     constructor(
         @InjectRepository(NotionConfigEntity) repository: Repository<NotionConfigEntity>

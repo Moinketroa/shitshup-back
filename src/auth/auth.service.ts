@@ -19,7 +19,6 @@ export class AuthService {
         private readonly jwtService: JwtService,
         private readonly userMapper: UserMapper,
         @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
-        @InjectRepository(YoutubeUserEntity) private readonly youtubeUserRepository: Repository<YoutubeUserEntity>,
     ) {}
 
     async login(user: User) {
@@ -44,11 +43,18 @@ export class AuthService {
         return this.youtubeAuthService.getCurrentUser();
     }
 
+    async getCurrentUser(): Promise<UserEntity | null> {
+        const currentYoutubeUser = await this.youtubeAuthService.getCurrentUser();
+        const currentYoutubeUserEntity = await this.youtubeAuthService.findYoutubeUser(currentYoutubeUser?.id);
+
+        return this.findUser(currentYoutubeUserEntity?.user?.id);
+    }
+
     private async findAndUpdateOrCreateUser(user: User): Promise<UserEntity> {
         let userId = user.id;
 
         if (isNullOrUndefined(userId)) {
-            const youtubeUserFound = await this.findYoutubeUser(user.youtubeUserId);
+            const youtubeUserFound = await this.youtubeAuthService.findYoutubeUser(user.youtubeUserId);
 
             userId = youtubeUserFound?.user?.id;
         }
@@ -83,16 +89,5 @@ export class AuthService {
             : null;
     }
 
-    private async findYoutubeUser(youtubeUserId: string | undefined): Promise<YoutubeUserEntity | null> {
-        return isDefined(youtubeUserId)
-            ? this.youtubeUserRepository.findOne({
-                  where: {
-                      id: youtubeUserId,
-                  },
-                  relations: {
-                      user: true,
-                  },
-              })
-            : null;
-    }
+
 }
