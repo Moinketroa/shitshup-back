@@ -1,3 +1,5 @@
+import { MusicDataCategory } from './music-data-category.enum';
+
 export class MusicData {
     fileName: string;
     length: string;
@@ -12,4 +14,9 @@ export class MusicData {
     key: string;
     keyOpenNotation: string;
     keyCamelot: string;
+
+    genres: string[];
+    altGenres: string[];
+    timbre: number;
+    categories: MusicDataCategory[];
 }
