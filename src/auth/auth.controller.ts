@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { Response } from 'express';
 import * as process from 'process';
 import { URL } from 'url';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './guard/auth.guard';
 
 @Controller('auth')
 export class AuthController {

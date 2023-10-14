@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { PersistenceModule } from './dao/persistence.module';
 import { YoutubeModule } from './youtube/youtube.module';
 import { NotionModule } from './notion/notion.module';
+import { TaskNotificationModule } from './task/task-notification/task-notification.module';
 
 
 @Module({
@@ -16,6 +17,8 @@ import { NotionModule } from './notion/notion.module';
         YoutubeModule,
 
         NotionModule,
+
+        TaskNotificationModule,
     ],
 })
 export class AppModule {}

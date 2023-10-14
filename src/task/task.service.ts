@@ -4,6 +4,7 @@ import { TaskName } from './model/task-name.model';
 import { Task } from './model/task.model';
 import { TaskMapper } from './mapper/task.mapper';
 import { AuthService } from '../auth/auth.service';
+import { UserEntity } from '../dao/user/entity/user.entity';
 
 @Injectable()
 export class TaskService {
@@ -35,6 +36,13 @@ export class TaskService {
 
     async createChildTask(parentTask: Task, childTask: Task): Promise<void> {
         await this.taskRepository.linkTasks(parentTask.id!, childTask.id!);
+    }
+
+    async getTaskTrees(): Promise<Task[]> {
+        const currentUser: UserEntity = (await this.authService.getCurrentUser())!;
+        const allCurrentUserTasks = await this.taskRepository.getTaskTrees(currentUser);
+
+        return allCurrentUserTasks.map(taskEntity => this.taskMapper.treeFromEntity(taskEntity));
     }
 
     async incrementTasksDone(task: Task): Promise<Task> {

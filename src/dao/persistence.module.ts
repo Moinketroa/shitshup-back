@@ -15,12 +15,13 @@ const moduleEntities: any[] = [
 @Module({
     imports: [
         TypeOrmModule.forRoot({
-            type: 'mysql',
+            type: 'postgres',
             host: 'localhost',
-            port: 3306,
+            port: 5432,
             username: 'root',
-            password: 'rootroot',
+            password: 'password',
             database: 'shitshup',
+            schema: 'public',
             entities: moduleEntities,
             // synchronize: true,
         }),

@@ -4,4 +4,6 @@ export class Task {
     totalTasks: number;
     tasksDone: number;
     hasFailed: boolean;
+    children?: Task[];
+    parentId?: string;
 }

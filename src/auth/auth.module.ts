@@ -9,8 +9,10 @@ import { YoutubeAuthModule } from './youtube-auth/youtube-auth.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from '../dao/user/entity/user.entity';
 import { AuthController } from './auth.controller';
-import { AuthGuard } from './auth.guard';
+import { AuthGuard } from './guard/auth.guard';
 import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
+import { WsAuthService } from './ws-auth.service';
+import { WsAuthGuard } from './guard/ws-auth.guard';
 
 @Module({
     imports: [
@@ -33,11 +35,15 @@ import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
         UserMapper,
         AuthService,
         AuthGuard,
+
+        WsAuthService,
+        WsAuthGuard,
     ],
     exports: [
         JwtStrategy,
         PassportModule,
         AuthService,
+        WsAuthService,
     ],
 })
 export class AuthModule {
