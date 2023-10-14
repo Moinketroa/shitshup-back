@@ -24,7 +24,18 @@ export class TaskMapper {
             totalTasks: taskEntity.totalTasks,
             tasksDone: taskEntity.tasksDone,
             hasFailed: taskEntity.hasFailed,
+            parentId: taskEntity.parentTask?.id,
         }
+    }
+
+    treeFromEntity(taskEntity: TaskEntity): Task {
+        const task = this.fromEntity(taskEntity);
+
+        if (taskEntity?.subTasks?.length !== 0) {
+            task.children = taskEntity.subTasks?.map(subTask => this.treeFromEntity(subTask));
+        }
+
+        return task;
     }
 
     toEntity(task: Task, user: UserEntity): TaskEntity {

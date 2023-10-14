@@ -3,6 +3,7 @@ import { Repository, TreeRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TaskEntity } from './entity/task.entity';
 import { isDefined } from '../../util/util';
+import { UserEntity } from '../user/entity/user.entity';
 
 @Injectable()
 export class TaskRepository extends TreeRepository<TaskEntity> {
@@ -35,9 +36,20 @@ export class TaskRepository extends TreeRepository<TaskEntity> {
                   },
                   relations: {
                       parentTask: true,
+                      user: true,
                   },
               })
             : null;
+    }
+
+    async getTaskTrees(user: UserEntity): Promise<TaskEntity[]> {
+        const allTasks = await this.findTrees({
+            relations: [
+                'user'
+            ],
+        });
+
+        return allTasks.filter(task => task.user.id === user.id);
     }
 
     async incrementTaskDone(id: string): Promise<TaskEntity> {
