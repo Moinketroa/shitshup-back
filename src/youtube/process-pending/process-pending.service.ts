@@ -31,6 +31,8 @@ export class ProcessPendingService {
 
         if (allIdsToProcess.length === 0) {
             console.log('[PROCESS_PENDING] No videos to process. Process ended.');
+            await this.processTaskService.completeTask();
+
             return [];
         }
 
@@ -43,6 +45,8 @@ export class ProcessPendingService {
         await this.triggerStep5(musicDataAnalysisResults);
 
         console.log('[PROCESS_PENDING] Process ended.');
+        await this.processTaskService.completeTask();
+
         return {
             idsNotDownloaded: step2Results.idsNotDownloaded,
             musicDataAnalysisResult: musicDataAnalysisResults,

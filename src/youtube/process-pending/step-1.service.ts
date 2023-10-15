@@ -80,7 +80,7 @@ export class Step1Service extends AbstractStep {
 
     private async triggerDeleteExplicitDuplicates(playlistId: string, allExplicitDuplicatesIds: string[]) {
         console.log(
-            '[PROCESS_PENDING][STEP 1] Explicit duplicates found. Excluding from processing and deleting from Pending playlist...',
+            '[PROCESS_PENDING][STEP 1] Explicit duplicates or unavailable videos found. Excluding from processing and deleting from Pending playlist...',
         );
         const subTask = await this.createSubStepTask(
             TaskCategory.SUB1_DELETE_EXPLICIT_DUPLICATES,
@@ -88,7 +88,12 @@ export class Step1Service extends AbstractStep {
         );
 
         return await this.runSubTask(subTask, async () => {
-            await this.youtubePlaylistRepository.deleteIdsFromPlaylist(playlistId, allExplicitDuplicatesIds);
+            for (const explicateIdToDelete of allExplicitDuplicatesIds) {
+                await this.youtubePlaylistRepository.deleteIdFromPlaylist(playlistId, explicateIdToDelete);
+
+                await this.progressStepTask();
+            }
+
             console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates deleted from playlist');
         });
     }

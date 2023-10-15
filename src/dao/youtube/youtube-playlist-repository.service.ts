@@ -156,24 +156,19 @@ export class YoutubePlaylistRepository {
         }
     }
 
-    async deleteIdsFromPlaylist(playlistId: string, idsToDelete: string[]): Promise<void> {
-        console.log(`[YoutubePlaylistRepository] Searching for ${idsToDelete.length} videos to delete`);
-        const playlistItemsToDelete: YoutubeClientPlaylistItem[] = await this.fetchPlaylistItemToDelete(
+    async deleteIdFromPlaylist(playlistId: string, idToDelete: string): Promise<void> {
+        console.log(`[YoutubePlaylistRepository] Searching for ${idToDelete} videos playlistItem`);
+        const playlistItemToDelete: YoutubeClientPlaylistItem | null = await this.fetchPlaylistItemToDelete(
             playlistId,
-            idsToDelete,
+            idToDelete,
         );
 
-        console.log(`[YoutubePlaylistRepository] Deleting video(s) from playlist ${playlistId}`);
-        for (const playlistItem of playlistItemsToDelete) {
-            await this.removePlaylistItem(playlistId, playlistItem);
+        if (isNullOrUndefined(playlistItemToDelete)) {
+            throw new Error("Playlist Item to delete can't be found. Did you already delete it ?");
         }
-    }
 
-    async addIdsToPlaylist(playlistId: string, idsToInsert: string[]): Promise<void> {
-        console.log(`[YoutubePlaylistRepository] Adding video(s) to playlist ${playlistId}`);
-        for (const idToInsert of idsToInsert) {
-            await this.addIdToPlaylist(playlistId, idToInsert);
-        }
+        console.log(`[YoutubePlaylistRepository] Deleting video from playlist ${playlistId}`);
+        await this.removePlaylistItem(playlistId, playlistItemToDelete);
     }
 
     async addIdToPlaylist(playlistId: string, idToInsert: string): Promise<void> {
@@ -215,10 +210,7 @@ export class YoutubePlaylistRepository {
         return playListPageResponse.data;
     }
 
-    private async fetchPlaylistItemToDelete(playlistId: string, idsToDelete: string[]): Promise<YoutubeClientPlaylistItem[]> {
-        const idsToDeleteArray = [...idsToDelete];
-        const playlistItemsToDelete: YoutubeClientPlaylistItem[] = [];
-
+    private async fetchPlaylistItemToDelete(playlistId: string, idsToDelete: string): Promise<YoutubeClientPlaylistItem | null> {
         let playlistPage: YoutubeClientPlaylistItemResponse;
         let playlistItems: YoutubeClientPlaylistItem[];
         let nextPageToken: string | null | undefined = undefined;
@@ -234,19 +226,13 @@ export class YoutubePlaylistRepository {
                 const playlistItem: YoutubeClientPlaylistItem = playlistItems[i];
                 const videoId = <string>playlistItem?.contentDetails?.videoId;
 
-                if (idsToDeleteArray.includes(videoId)) {
-                    playlistItemsToDelete.push(playlistItem);
-
-                    pull(idsToDeleteArray, videoId);
-
-                    if (idsToDeleteArray.length === 0) {
-                        break;
-                    }
+                if (idsToDelete === videoId) {
+                    return playlistItem;
                 }
             }
-        } while (!!nextPageToken && idsToDeleteArray.length !== 0);
+        } while (!!nextPageToken);
 
-        return playlistItemsToDelete;
+        return null;
     }
 
     private async removePlaylistItem(playlistId: string, playlistItem: YoutubeClientPlaylistItem): Promise<void> {
