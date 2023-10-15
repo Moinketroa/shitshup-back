@@ -66,27 +66,27 @@ export class AbstractStep {
         }
     }
 
-    async progressStepTask(): Promise<Task> {
+    protected async progressStepTask(): Promise<Task> {
         return (this.stepTask = await this.taskService.incrementTasksDone(this.stepTask));
     }
 
-    async completeStepTask(): Promise<Task> {
+    protected async completeStepTask(): Promise<Task> {
         return (this.stepTask = await this.taskService.completeTask(this.stepTask));
     }
 
-    async progressTask(task: Task): Promise<Task> {
+    protected async progressTask(task: Task): Promise<Task> {
         return await this.taskService.incrementTasksDone(task);
     }
 
-    async failTask(task: Task): Promise<Task> {
+    protected async failTask(task: Task): Promise<Task> {
         return await this.taskService.failTask(task);
     }
 
-    async completeTask(task: Task): Promise<Task> {
+    protected async completeTask(task: Task): Promise<Task> {
         return await this.taskService.completeTask(task);
     }
 
-    async runSubTask<T>(task: Task, taskRun: () => Promise<T>): Promise<T> {
+    protected async runSubTask<T>(task: Task, taskRun: () => Promise<T>): Promise<T> {
         try {
             return await taskRun();
         } catch (e) {
@@ -96,6 +96,7 @@ export class AbstractStep {
             throw e;
         } finally {
             await this.completeTask(task);
+            await this.progressStepTask();
         }
     }
 }

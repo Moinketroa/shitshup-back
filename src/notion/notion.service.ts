@@ -3,6 +3,8 @@ import { NotionDatabase } from '../dao/notion/entity/notion-database.entity';
 import { Injectable } from '@nestjs/common';
 import { NotionConfigService } from './config/notion-config.service';
 import { isNullOrUndefined } from '../util/util';
+import { MusicDataAnalysisResult } from '../youtube/process-pending/model/music-data-analysis-result.model';
+import { NotionPropertiesMapper } from '../dao/notion/mapper/notion-properties.mapper';
 
 @Injectable()
 export class NotionService {
@@ -10,6 +12,7 @@ export class NotionService {
     constructor(
         private readonly notionDatabaseRepository: NotionDatabaseRepository,
         private readonly notionConfigService: NotionConfigService,
+        private readonly notionPropertiesMapper: NotionPropertiesMapper,
     ) {
     }
 
@@ -29,5 +32,14 @@ export class NotionService {
         } else {
             return notionDatabase;
         }
+    }
+
+    async addRowToMediaLibrary(musicDataAnalysisResult: MusicDataAnalysisResult): Promise<void> {
+        const mediaLibrary = await this.getMediaLibrary();
+        const rawMediaLibraryDatabaseStructure = await this.notionDatabaseRepository.fetchRawDatabase(mediaLibrary?.id!);
+
+        const propertiesRowToAdd = this.notionPropertiesMapper.toNotionProperties(musicDataAnalysisResult, rawMediaLibraryDatabaseStructure.properties);
+
+        await this.notionDatabaseRepository.createRow(mediaLibrary?.id!, propertiesRowToAdd);
     }
 }

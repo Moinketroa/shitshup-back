@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
-import { DatabaseObjectResponse } from '@notionhq/client/build/src/api-endpoints';
+import { DatabaseObjectResponse, GetDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
 import { NotionDatabaseMapper } from './mapper/notion-database.mapper';
 import * as process from 'process';
 import { NotionConfigEntity } from './entity/notion-config.entity';
@@ -84,5 +84,21 @@ export class NotionDatabaseRepository {
             .toFormat('f');
 
         return `Created : ${now} - Modified : ${now}`;
+    }
+
+    fetchRawDatabase(databaseId: string): Promise<GetDatabaseResponse> {
+        return this.notionClientWrapper.client.databases.retrieve({
+            database_id: databaseId,
+        });
+    }
+
+    async createRow(databaseId: string, properties: any): Promise<void> {
+        await this.notionClientWrapper.client.pages.create({
+            parent: {
+                database_id: databaseId,
+                type: 'database_id',
+            },
+            properties: properties,
+        })
     }
 }

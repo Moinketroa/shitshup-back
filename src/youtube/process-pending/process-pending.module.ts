@@ -10,6 +10,8 @@ import { EssentiaModule } from '../../essentia/essentia.module';
 import { MusicDataMapper } from './mapper/music-data.mapper';
 import { TaskModule } from '../../task/task.module';
 import { ProcessTaskService } from './process-task.service';
+import { Step6Service } from './step-6.service';
+import { NotionModule } from '../../notion/notion.module';
 
 @Module({
     imports: [
@@ -17,6 +19,7 @@ import { ProcessTaskService } from './process-task.service';
         YoutubePersistenceModule,
         EssentiaModule,
         TaskModule,
+        NotionModule,
     ],
     providers: [
         ProcessPendingService,
@@ -25,6 +28,7 @@ import { ProcessTaskService } from './process-task.service';
         Step2Service,
         Step3Service,
         Step5Service,
+        Step6Service,
 
         MusicDataMapper,
 

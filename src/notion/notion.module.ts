@@ -9,6 +9,7 @@ import { NotionDatabaseMapper } from '../dao/notion/mapper/notion-database.mappe
 import { NotionClientWrapper } from './notion-client.wrapper';
 import { NotionPersistenceModule } from '../dao/notion/notion-persistence.module';
 import { NotionClientInitializer } from './notion-client.initializer';
+import { NotionPropertiesMapper } from '../dao/notion/mapper/notion-properties.mapper';
 
 export function notionClientInit(notionClientInitializer: NotionClientInitializer) {
     return notionClientInitializer.notionClientFactory();
@@ -22,6 +23,7 @@ export function notionClientInit(notionClientInitializer: NotionClientInitialize
     providers: [
         NotionConfigService,
         NotionConfigMapper,
+        NotionPropertiesMapper,
 
         NotionService,
         NotionDatabaseRepository,
@@ -38,6 +40,9 @@ export function notionClientInit(notionClientInitializer: NotionClientInitialize
     ],
     imports: [
         NotionPersistenceModule,
+    ],
+    exports: [
+        NotionService,
     ]
 })
 export class NotionModule {}

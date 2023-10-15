@@ -9,8 +9,12 @@ export class MusicDataMapper {
     toMusicDataAnalysisResult(musicData: MusicData, fileInfo: FileInfo): MusicDataAnalysisResult {
         return <MusicDataAnalysisResult>{
             videoId: fileInfo.id,
-            trackName: fileInfo.track === 'NA' ? '' : fileInfo.track,
-            artist: fileInfo.artist === 'NA' ? '' : fileInfo.artist,
+            trackName: fileInfo.track === 'NA'
+                ? this.removeFileExtension(musicData.fileName)
+                : fileInfo.track,
+            artist: fileInfo.artist === 'NA'
+                ? ''
+                : fileInfo.artist,
             filePath: fileInfo.filePath,
             fileName: musicData.fileName,
 
@@ -25,7 +29,21 @@ export class MusicDataMapper {
             key: musicData.key,
             keyOpenNotation: musicData.keyOpenNotation,
             keyCamelot: musicData.keyCamelot,
+
+            genres: musicData.genres,
+            altGenres: musicData.altGenres,
+            timbre: musicData.timbre,
+            categories: musicData.categories,
         };
+    }
+
+    private removeFileExtension(filename: string): string {
+        const lastDotIndex = filename.lastIndexOf('.');
+        if (lastDotIndex === -1) {
+            return filename;
+        } else {
+            return filename.substring(0, lastDotIndex);
+        }
     }
 
 }
