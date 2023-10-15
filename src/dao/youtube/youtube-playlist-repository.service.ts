@@ -250,11 +250,15 @@ export class YoutubePlaylistRepository {
     }
 
     private async removePlaylistItem(playlistId: string, playlistItem: YoutubeClientPlaylistItem): Promise<void> {
+        if (isNullOrUndefined(playlistItem?.id)) {
+            throw new Error('Video Id is not defined');
+        }
+
         console.log(
             `[YoutubePlaylistRepository] Deleting video ${playlistItem.contentDetails?.videoId} from playlist ${playlistId}`,
         );
         await this.youtubeClient.playlistItems.delete({
-            id: playlistItem.id!,
+            id: playlistItem.id,
         });
         console.log(`[YoutubePlaylistRepository] Video ${playlistItem.contentDetails?.videoId} deleted`);
     }

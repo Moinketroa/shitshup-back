@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import * as process from 'process';
 import { ChildProcessPromise, exec } from 'promisify-child-process';
+import { WarningService } from '../../warning/warning.service';
+import { isString } from '@nestjs/common/utils/shared.utils';
+import { WarningType } from '../../warning/mapper/warning-type.enum';
 
 @Injectable()
 export class YoutubeDownloaderPythonRepository {
@@ -11,7 +14,7 @@ export class YoutubeDownloaderPythonRepository {
     private readonly DOWNLOAD_ARCHIVE_PATH: string;
     private readonly DOWNLOAD_OUTPUT_DIRECTORY_PATH: string;
 
-    constructor() {
+    constructor(private readonly warningService: WarningService) {
         this.LIST_ID_SCRIPT_PATH = process.env.YT_DLP_LIST_ID_SCRIPT_PATH || '';
         this.CHECK_DIFF_SCRIPT_PATH = process.env.YT_DLP_CHECK_DIFF_SCRIPT_PATH || '';
         this.DOWNLOAD_PLAYLIST_SCRIPT_PATH = process.env.YT_DLP_DOWNLOAD_PLAYLIST_SCRIPT_PATH || '';
@@ -32,6 +35,8 @@ export class YoutubeDownloaderPythonRepository {
 
         if (stderr) {
             console.warn(`[LIST_ID] Error during List ids of playlist id ${playlistId} : `, stderr);
+
+            await this.handleError(stderr);
         }
 
         const idsOfPlaylist = (<string>stdout)?.trim();
@@ -77,6 +82,8 @@ export class YoutubeDownloaderPythonRepository {
 
         if (stderr) {
             console.warn(`[CHECK_DIFF] Error during Check diff : `, stderr);
+
+            await this.handleError(stderr);
         }
 
         const idsNotDownloaded = (<string>stdout)?.trim();
@@ -90,5 +97,18 @@ export class YoutubeDownloaderPythonRepository {
         const command = `bash ${scriptPath} ${args.join(' ')}`;
 
         return exec(command);
+    }
+
+    private async handleError(stdErr: string | Buffer) {
+        if (isString(stdErr)) {
+            if (stdErr.includes('Video unavailable')) {
+                const searchString = '[youtube] ';
+
+                const videoIdIndex = stdErr.indexOf(searchString) + searchString.length;
+                const videoId = stdErr.slice(videoIdIndex, videoIdIndex + 11);
+
+                await this.warningService.createWarning(videoId, WarningType.VIDEO_UNAVAILABLE, stdErr);
+            }
+        }
     }
 }
