@@ -7,17 +7,22 @@ import { AbstractStep } from './abstract-step.class';
 import { ProcessTaskService } from './process-task.service';
 import { TaskService } from '../../task/task.service';
 import { TaskCategory } from '../../task/model/task-category.enum';
+import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { WarningService } from '../../warning/warning.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,
 })
 export class Step1Service extends AbstractStep {
 
+    private readonly NOT_DELETED_WARNING_MESSAGE: string = '[Step 1] Cannot delete explicit duplicate video from pending playlist';
+
     constructor(processTaskService: ProcessTaskService,
                 taskService: TaskService,
+                warningService: WarningService,
                 private readonly youtubeDownloaderPythonRepository: YoutubeDownloaderPythonRepository,
                 private readonly youtubePlaylistRepository: YoutubePlaylistRepository) {
-        super(processTaskService, taskService);
+        super(processTaskService, taskService, warningService);
     }
 
     async stepVerifyPlaylistIdsAndCheckForExplicitDuplicates(token: string, playlistId: string): Promise<string[]> {
@@ -88,13 +93,25 @@ export class Step1Service extends AbstractStep {
         );
 
         return await this.runSubTask(subTask, async () => {
-            for (const explicateIdToDelete of allExplicitDuplicatesIds) {
-                await this.youtubePlaylistRepository.deleteIdFromPlaylist(playlistId, explicateIdToDelete);
-
-                await this.progressStepTask();
+            for (const explicitIdToDelete of allExplicitDuplicatesIds) {
+                await this.deleteExplicitDuplicate(playlistId, explicitIdToDelete)
             }
 
             console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates deleted from playlist');
         });
+    }
+
+    private async deleteExplicitDuplicate(playlistId: string, explicitIdToDelete: string) {
+        try {
+            await this.youtubePlaylistRepository.deleteIdFromPlaylist(playlistId, explicitIdToDelete);
+        } catch (e: any) {
+            await this.createWarning(
+                explicitIdToDelete,
+                WarningType.CANNOT_DELETE_FROM_PLAYLIST,
+                `${this.NOT_DELETED_WARNING_MESSAGE} ${e.toString()}`,
+            )
+        } finally {
+            await this.progressStepTask();
+        }
     }
 }

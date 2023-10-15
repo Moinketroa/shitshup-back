@@ -20,14 +20,14 @@ import { WarningType } from '../../warning/mapper/warning-type.enum';
 })
 export class Step2Service extends AbstractStep {
 
-    private readonly NOT_DOWNLOADED_WARNING_MESSAGE: string = 'Video not download. Perhaps its not available anymore.';
+    private readonly NOT_DOWNLOADED_WARNING_MESSAGE: string = '[Step 2] Video not downloaded. Perhaps its not available anymore.';
 
     constructor(processTaskService: ProcessTaskService,
                 taskService: TaskService,
+                warningService: WarningService,
                 private readonly youtubeDownloaderPythonRepository: YoutubeDownloaderPythonRepository,
-                private readonly youtubeDownloaderPythonFileInfoRepository: YoutubeDownloaderPythonFileInfoRepository,
-                private readonly warningService: WarningService,) {
-        super(processTaskService, taskService);
+                private readonly youtubeDownloaderPythonFileInfoRepository: YoutubeDownloaderPythonFileInfoRepository,) {
+        super(processTaskService, taskService, warningService);
     }
 
     async stepDownloadPlaylist(token: string, allIdsToProcess: string[]): Promise<Step2Results> {
@@ -121,10 +121,10 @@ export class Step2Service extends AbstractStep {
 
     private async createWarningsForNotDownloadedIds(notDownloadedIds: string[]): Promise<void> {
         for (const notDownloadedId of notDownloadedIds) {
-            await this.warningService.createWarning(
+            await this.createWarning(
                 notDownloadedId,
                 WarningType.NOT_DOWNLOADED,
-                this.NOT_DOWNLOADED_WARNING_MESSAGE
+                this.NOT_DOWNLOADED_WARNING_MESSAGE,
             );
         }
     }
