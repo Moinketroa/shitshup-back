@@ -4,6 +4,8 @@ import { TaskService } from '../../task/task.service';
 import { isDefined } from '../../util/util';
 import { TaskCategory } from '../../task/model/task-category.enum';
 import { TaskName } from '../../task/model/task-name.model';
+import { WarningService } from '../../warning/warning.service';
+import { WarningType } from '../../warning/mapper/warning-type.enum';
 
 export class AbstractStep {
 
@@ -11,7 +13,8 @@ export class AbstractStep {
     private stepTaskCategory: TaskCategory;
 
     constructor(private readonly processTaskService: ProcessTaskService,
-                private readonly taskService: TaskService,) {
+                private readonly taskService: TaskService,
+                private readonly warningService: WarningService,) {
 
     }
 
@@ -84,6 +87,10 @@ export class AbstractStep {
 
     protected async completeTask(task: Task): Promise<Task> {
         return await this.taskService.completeTask(task);
+    }
+
+    protected async createWarning(videoId: string, warningType: WarningType, warningMessage: string) {
+        await this.warningService.createWarning(videoId, warningType, warningMessage);
     }
 
     protected async runSubTask<T>(task: Task, taskRun: () => Promise<T>): Promise<T> {
