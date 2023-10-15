@@ -37,4 +37,8 @@ export class ProcessTaskService {
         return await this.taskService.incrementTasksDone(this.processMainTask);
     }
 
+    async completeTask(): Promise<Task> {
+        return await this.taskService.completeTask(this.processMainTask);
+    }
+
 }

@@ -53,7 +53,7 @@ export class TaskRepository extends TreeRepository<TaskEntity> {
     }
 
     async incrementTaskDone(id: string): Promise<TaskEntity> {
-        const taskEntity = (await this.findUniqueById(id))!;
+            const taskEntity = (await this.findUniqueById(id))!;
 
         taskEntity.tasksDone++;
 

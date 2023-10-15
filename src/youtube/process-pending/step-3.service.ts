@@ -55,7 +55,12 @@ export class Step3Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             console.log('[PROCESS_PENDING][STEP 3] Deleting videos from pending playlist.');
-            await this.youtubePlaylistRepository.deleteIdsFromPlaylist(youtubeUser.pendingPlaylistId, allDownloadedIds);
+
+            for (const downloadedId of allDownloadedIds) {
+                await this.youtubePlaylistRepository.deleteIdFromPlaylist(youtubeUser.pendingPlaylistId, downloadedId);
+
+                await this.progressStepTask();
+            }
 
             console.log('[PROCESS_PENDING][STEP 3] Deleting done.');
         });
@@ -66,7 +71,12 @@ export class Step3Service extends AbstractStep {
         const subTask = await this.createSubStepTask(TaskCategory.SUB3_ADD_IDS_TO_PROCESSED, allDownloadedIds.length);
 
         return await this.runSubTask(subTask, async () => {
-            await this.youtubePlaylistRepository.addIdsToPlaylist(youtubeUser.processedPlaylistId, allDownloadedIds);
+            for (const downloadedId of allDownloadedIds) {
+                await this.youtubePlaylistRepository.addIdToPlaylist(youtubeUser.processedPlaylistId, downloadedId);
+
+                await this.progressTask(subTask);
+            }
+
             console.log('[PROCESS_PENDING][STEP 3] Videos added to processed playlist.');
             console.log('[PROCESS_PENDING][STEP 3] Moving done.');
         });

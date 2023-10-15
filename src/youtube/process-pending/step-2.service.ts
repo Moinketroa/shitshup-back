@@ -72,7 +72,12 @@ export class Step2Service extends AbstractStep {
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_PARSE_FILE_INFOS, 1);
 
         return await this.runSubTask(subTask, async () => {
-            return await this.youtubeDownloaderPythonFileInfoRepository.getFileInfos(filesDownloadedInfoFilepath);
+            return await this.youtubeDownloaderPythonFileInfoRepository.getFileInfos(
+                filesDownloadedInfoFilepath,
+                () => {
+                    this.progressTask(subTask);
+                },
+            );
         });
     }
 

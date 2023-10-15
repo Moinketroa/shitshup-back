@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import { FileInfo } from './model/file-info.model';
-import { file } from 'googleapis/build/src/apis/file';
 
 @Injectable()
 export class YoutubeDownloaderPythonFileInfoRepository {
 
-    async getFileInfos(filePath: string): Promise<FileInfo[]> {
+    async getFileInfos(filePath: string, progressStepCallback: () => void): Promise<FileInfo[]> {
         try {
             const fileContent = await fs.promises.readFile(filePath, 'utf-8');
             const lines = fileContent.split('\n');
@@ -16,6 +15,8 @@ export class YoutubeDownloaderPythonFileInfoRepository {
                 if (line.length !== 0) {
                     const fileInfo: FileInfo = this.parseLine(line);
                     fileInfos.push(fileInfo);
+
+                    progressStepCallback.call(this);
                 }
             }
 
