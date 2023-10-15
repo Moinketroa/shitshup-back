@@ -1,0 +1,5 @@
+export enum WarningType {
+    NOT_DOWNLOADED = 'NOT DOWNLOADED',
+    VIDEO_UNAVAILABLE = 'VIDEO UNAVAILABLE',
+    ERROR = 'ERROR',
+}

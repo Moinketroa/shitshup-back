@@ -4,12 +4,14 @@ import { YoutubeUserEntity } from './youtube/entity/youtube-user.entity';
 import { NotionConfigEntity } from './notion/entity/notion-config.entity';
 import { UserEntity } from './user/entity/user.entity';
 import { TaskEntity } from './task/entity/task.entity';
+import { WarningEntity } from './warning/entity/warning.entity';
 
 const moduleEntities: any[] = [
     YoutubeUserEntity,
     NotionConfigEntity,
     UserEntity,
     TaskEntity,
+    WarningEntity,
 ];
 
 @Module({

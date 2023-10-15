@@ -1,9 +1,9 @@
 import { Injectable, Scope } from '@nestjs/common';
 import {
-    YoutubeDownloaderPythonRepository
+    YoutubeDownloaderPythonRepository,
 } from '../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
 import {
-    YoutubeDownloaderPythonFileInfoRepository
+    YoutubeDownloaderPythonFileInfoRepository,
 } from '../../dao/youtube-downloader-python/youtube-downloader-python-file-info.repository';
 import { Step2Results } from './model/step-2-results.model';
 import * as fs from 'fs';
@@ -12,16 +12,21 @@ import { ProcessTaskService } from './process-task.service';
 import { TaskService } from '../../task/task.service';
 import { TaskCategory } from '../../task/model/task-category.enum';
 import { FileInfo } from '../../dao/youtube-downloader-python/model/file-info.model';
+import { WarningService } from '../../warning/warning.service';
+import { WarningType } from '../../warning/mapper/warning-type.enum';
 
 @Injectable({
     scope: Scope.TRANSIENT,
 })
 export class Step2Service extends AbstractStep {
 
+    private readonly NOT_DOWNLOADED_WARNING_MESSAGE: string = 'Video not download. Perhaps its not available anymore.';
+
     constructor(processTaskService: ProcessTaskService,
                 taskService: TaskService,
                 private readonly youtubeDownloaderPythonRepository: YoutubeDownloaderPythonRepository,
-                private readonly youtubeDownloaderPythonFileInfoRepository: YoutubeDownloaderPythonFileInfoRepository) {
+                private readonly youtubeDownloaderPythonFileInfoRepository: YoutubeDownloaderPythonFileInfoRepository,
+                private readonly warningService: WarningService,) {
         super(processTaskService, taskService);
     }
 
@@ -95,18 +100,28 @@ export class Step2Service extends AbstractStep {
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_GET_IDS_NOT_DOWNLOADED, 1);
 
         return await this.runSubTask(subTask, async () => {
-            const notDownloaded = await this.youtubeDownloaderPythonRepository.getIdNotDownloaded(token, allIdsToProcess);
+            const notDownloadedIds = await this.youtubeDownloaderPythonRepository.getIdNotDownloaded(token, allIdsToProcess);
 
-            if (notDownloaded.length === 0) {
+            if (notDownloadedIds.length === 0) {
                 console.log('[PROCESS_PENDING][STEP 2] Success : All videos downloaded');
             } else {
-                console.log('[PROCESS_PENDING][STEP 2] Videos ids not downloaded : ', notDownloaded.join(' '));
+                await this.createWarningsForNotDownloadedIds(notDownloadedIds);
+
+                console.log('[PROCESS_PENDING][STEP 2] Videos ids not downloaded : ', notDownloadedIds.join(' '));
             }
 
-            return notDownloaded;
+            return notDownloadedIds;
         });
+    }
 
-
+    private async createWarningsForNotDownloadedIds(notDownloadedIds: string[]): Promise<void> {
+        for (const notDownloadedId of notDownloadedIds) {
+            await this.warningService.createWarning(
+                notDownloadedId,
+                WarningType.NOT_DOWNLOADED,
+                this.NOT_DOWNLOADED_WARNING_MESSAGE
+            );
+        }
     }
 
 }
