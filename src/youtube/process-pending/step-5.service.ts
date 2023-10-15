@@ -1,13 +1,10 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { FileInfo } from '../../dao/youtube-downloader-python/model/file-info.model';
-import { EssentiaService } from '../../essentia/essentia.service';
-import { firstValueFrom, map, Observable } from 'rxjs';
-import { MusicDataMapper } from './mapper/music-data.mapper';
-import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
 import { AbstractStep } from './abstract-step.class';
 import { ProcessTaskService } from './process-task.service';
 import { TaskService } from '../../task/task.service';
+import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
 import { TaskCategory } from '../../task/model/task-category.enum';
+import { NotionService } from '../../notion/notion.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -16,42 +13,36 @@ export class Step5Service extends AbstractStep {
 
     constructor(processTaskService: ProcessTaskService,
                 taskService: TaskService,
-                private readonly essentiaService: EssentiaService,
-                private readonly musicDataMapper: MusicDataMapper,) {
+                private readonly notionService: NotionService) {
         super(processTaskService, taskService);
     }
 
-    async stepGetMusicInfos(fileInfos: FileInfo[]): Promise<MusicDataAnalysisResult[]> {
+    async stepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
         await this.initStepTask(TaskCategory.STEP5, 1);
 
-        const result = await this.triggerStepProcess(fileInfos);
+        const result = await this.triggerStepProcess(musicDataAnalysisResults);
 
         await this.completeStepTask();
 
         return result;
     }
 
-    private async triggerStepProcess(fileInfos: FileInfo[]): Promise<MusicDataAnalysisResult[]> {
-        return await this.triggerSubStepAnalyseSimpleMusicData(fileInfos);
+    private async triggerStepProcess(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
+        return await this.triggerSubStepPushResultsToNotion(musicDataAnalysisResults);
     }
 
-    private async triggerSubStepAnalyseSimpleMusicData(fileInfos: FileInfo[]) {
-        console.log('[PROCESS_PENDING][STEP 5] Query Python Server for music data...');
-        const subTask = await this.createSubStepTask(TaskCategory.SUB5_ANALYSE_SIMPLE_MUSIC_DATAS, fileInfos.length);
+    private async triggerSubStepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
+        console.log('[PROCESS_PENDING][STEP 5] Pushing results to Notion...');
+        const subTask = await this.createSubStepTask(TaskCategory.SUB5_PUSH_RESULTS_TO_NOTION, musicDataAnalysisResults.length);
 
         return await this.runSubTask(subTask, async () => {
-            const $musicDataAnalysisResults = fileInfos.map(fileInfo => this.buildObservable(fileInfo));
+            for (const musicDataAnalysisResult of musicDataAnalysisResults) {
+                await this.notionService.addRowToMediaLibrary(musicDataAnalysisResult);
 
-            return Promise.all($musicDataAnalysisResults.map(obs => firstValueFrom(obs)));
+                await this.progressTask(subTask);
+            }
+            console.log('[PROCESS_PENDING][STEP 5] Pushing results to Notion done.');
         });
     }
 
-    private buildObservable(fileInfo: FileInfo): Observable<MusicDataAnalysisResult> {
-        return this.essentiaService.getMusicData(fileInfo.filePath)
-            .pipe(
-                map(musicData => (
-                    this.musicDataMapper.toMusicDataAnalysisResult(musicData, fileInfo)
-                ))
-            )
-    }
 }
