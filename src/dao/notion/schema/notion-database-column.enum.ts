@@ -1,0 +1,20 @@
+export enum NotionDatabaseColumn {
+    ID = 'Youtube Video ID',
+    NAME = 'Name',
+    ARTIST = 'Artist',
+    LENGTH = 'Length',
+    FILENAME = 'File Name',
+    FILEPATH = 'File Path',
+    REPLAY_GAIN = 'Replay Gain',
+    SAMPLE_RATE = 'Sample Rate',
+    BPM = 'BPM',
+    ALT_BPM = 'Alternate BPM',
+    DANCEABILITY = 'Danceability',
+    KEY = 'Key',
+    KEY_OPEN_NOTATION = 'Key (Open Key Notation)',
+    KEY_CAMELOT = 'Key (Camelot Notation)',
+    GENRES = 'Genres',
+    ALT_GENRES = 'Alternate Genres',
+    TIMBRE = 'Timbre',
+    CATEGORIES = 'Categories'
+}

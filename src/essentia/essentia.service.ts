@@ -16,7 +16,6 @@ export class EssentiaService {
         return this.essentiaHttpService.fetchMusicData(filePath)
             .pipe(
                 map((musicDataEntity: MusicDataEntity) => {
-                    console.log('Data mapped from Python : ', this.essentiaMusicDataMapper.mapFromEntity(musicDataEntity));
                     return this.essentiaMusicDataMapper.mapFromEntity(musicDataEntity);
                 })
             )
