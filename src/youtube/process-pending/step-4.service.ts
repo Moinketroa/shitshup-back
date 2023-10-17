@@ -11,6 +11,7 @@ import { TaskCategory } from '../../task/model/task-category.enum';
 import { Task } from '../../task/model/task.model';
 import { WarningService } from '../../warning/warning.service';
 import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -23,7 +24,8 @@ export class Step4Service extends AbstractStep {
                 taskService: TaskService,
                 warningService: WarningService,
                 private readonly essentiaService: EssentiaService,
-                private readonly musicDataMapper: MusicDataMapper,) {
+                private readonly musicDataMapper: MusicDataMapper,
+                private readonly authService: AuthService,) {
         super(processTaskService, taskService, warningService);
     }
 
@@ -42,20 +44,22 @@ export class Step4Service extends AbstractStep {
     }
 
     private async triggerSubStepAnalyseMusicData(fileInfos: FileInfo[]) {
+        const currentUser = await this.authService.getCurrentUser();
+
         console.log('[PROCESS_PENDING][STEP 4] Query Python Server for music data...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB4_ANALYSE_SIMPLE_MUSIC_DATAS, fileInfos.length);
 
         return await this.runSubTask(subTask, async () => {
             const $musicDataAnalysisResults = fileInfos.map(
-                fileInfo => this.buildObservable(fileInfo, subTask)
+                fileInfo => this.buildObservable(fileInfo, currentUser?.id!, subTask)
             );
 
             return Promise.all($musicDataAnalysisResults.map(obs => firstValueFrom(obs)));
         });
     }
 
-    private buildObservable(fileInfo: FileInfo, parentTask: Task): Observable<MusicDataAnalysisResult> {
-        return this.essentiaService.getMusicData(fileInfo.filePath)
+    private buildObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<MusicDataAnalysisResult> {
+        return this.essentiaService.getMusicData(fileInfo.filePath, userId)
             .pipe(
                 catchError((err, caught) => {
                     this.createWarning(

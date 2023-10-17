@@ -12,8 +12,8 @@ export class EssentiaService {
                 private readonly essentiaHttpService: EssentiaHttpRepository) {
     }
 
-    getMusicData(filePath: string): Observable<MusicData> {
-        return this.essentiaHttpService.fetchMusicData(filePath)
+    getMusicData(filePath: string, userId: string): Observable<MusicData> {
+        return this.essentiaHttpService.fetchMusicData(filePath, userId)
             .pipe(
                 map((musicDataEntity: MusicDataEntity) => {
                     return this.essentiaMusicDataMapper.mapFromEntity(musicDataEntity);
