@@ -18,9 +18,9 @@ export class EssentiaHttpRepository {
         this.SHITSHUP_ESSENTIA_API_URL = process.env.SHITSHUP_ESSENTIA_API_URL ?? '';
     }
 
-    fetchMusicData(filePath: string): Observable<MusicDataEntity> {
+    fetchMusicData(filePath: string, userId: string): Observable<MusicDataEntity> {
         try {
-            const url = `${ this.SHITSHUP_ESSENTIA_API_URL }/${ this.musicDataPath }`;
+            const url = `${ this.SHITSHUP_ESSENTIA_API_URL }/${ this.musicDataPath }/${ userId }`;
 
             const formData: FormData = this.createFormDataFromFilePath(filePath);
 

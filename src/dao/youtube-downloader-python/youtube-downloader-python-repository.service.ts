@@ -4,6 +4,7 @@ import { ChildProcessPromise, exec } from 'promisify-child-process';
 import { WarningService } from '../../warning/warning.service';
 import { isString } from '@nestjs/common/utils/shared.utils';
 import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class YoutubeDownloaderPythonRepository {
@@ -11,14 +12,17 @@ export class YoutubeDownloaderPythonRepository {
     private readonly LIST_ID_SCRIPT_PATH: string;
     private readonly CHECK_DIFF_SCRIPT_PATH: string;
     private readonly DOWNLOAD_PLAYLIST_SCRIPT_PATH: string;
-    private readonly DOWNLOAD_ARCHIVE_PATH: string;
+    private readonly DOWNLOAD_ARCHIVE_DIRECTORY_PATH: string;
+    private readonly DOWNLOAD_ARCHIVE_NAME: string;
     private readonly DOWNLOAD_OUTPUT_DIRECTORY_PATH: string;
 
-    constructor(private readonly warningService: WarningService) {
+    constructor(private readonly warningService: WarningService,
+                private readonly authService: AuthService,) {
         this.LIST_ID_SCRIPT_PATH = process.env.YT_DLP_LIST_ID_SCRIPT_PATH || '';
         this.CHECK_DIFF_SCRIPT_PATH = process.env.YT_DLP_CHECK_DIFF_SCRIPT_PATH || '';
         this.DOWNLOAD_PLAYLIST_SCRIPT_PATH = process.env.YT_DLP_DOWNLOAD_PLAYLIST_SCRIPT_PATH || '';
-        this.DOWNLOAD_ARCHIVE_PATH = process.env.YT_DLP_DOWNLOAD_ARCHIVE_PATH || '';
+        this.DOWNLOAD_ARCHIVE_DIRECTORY_PATH = process.env.YT_DLP_DOWNLOAD_ARCHIVE_DIRECTORY_PATH || '';
+        this.DOWNLOAD_ARCHIVE_NAME = process.env.YT_DLP_DOWNLOAD_ARCHIVE_NAME || '';
         this.DOWNLOAD_OUTPUT_DIRECTORY_PATH = process.env.YT_DLP_DOWNLOAD_OUTPUT_DIRECTORY_PATH || '';
     }
 
@@ -47,10 +51,12 @@ export class YoutubeDownloaderPythonRepository {
     }
 
     async downloadPlaylist(token: string, allPlaylistIds: string[]): Promise<string> {
+        const currentUser = await this.authService.getCurrentUser();
+
         const args = [
             token,
-            this.DOWNLOAD_OUTPUT_DIRECTORY_PATH,
-            this.DOWNLOAD_ARCHIVE_PATH,
+            `${this.DOWNLOAD_OUTPUT_DIRECTORY_PATH}/${currentUser?.id}`,
+            `${this.DOWNLOAD_ARCHIVE_DIRECTORY_PATH}/${currentUser?.id}/${this.DOWNLOAD_ARCHIVE_NAME}`,
             ...allPlaylistIds,
         ];
 
@@ -69,9 +75,11 @@ export class YoutubeDownloaderPythonRepository {
     }
 
     async getIdNotDownloaded(token: string, allPlaylistIds: string[]): Promise<string[]> {
+        const currentUser = await this.authService.getCurrentUser();
+
         const args: string[] = [
             token,
-            this.DOWNLOAD_ARCHIVE_PATH,
+            `${this.DOWNLOAD_ARCHIVE_DIRECTORY_PATH}/${currentUser?.id}/${this.DOWNLOAD_ARCHIVE_NAME}`,
             ...allPlaylistIds,
         ];
 

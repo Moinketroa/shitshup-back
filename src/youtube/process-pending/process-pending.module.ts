@@ -13,6 +13,7 @@ import { ProcessTaskService } from './process-task.service';
 import { Step5Service } from './step-5.service';
 import { NotionModule } from '../../notion/notion.module';
 import { WarningModule } from '../../warning/warning.module';
+import { AuthModule } from '../../auth/auth.module';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { WarningModule } from '../../warning/warning.module';
         TaskModule,
         NotionModule,
         WarningModule,
+        AuthModule,
     ],
     providers: [
         ProcessPendingService,
