@@ -1,13 +1,13 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { YoutubeUser } from '../../auth/youtube-auth/model/youtube-user.model';
-import { Step1Service } from './step-1.service';
-import { Step2Service } from './step-2.service';
-import { Step3Service } from './step-3.service';
-import { Step4Service } from './step-4.service';
+import { Step1Service } from './step/step-1.service';
+import { Step2Service } from './step/step-2.service';
+import { Step3Service } from './step/step-3.service';
+import { Step4Service } from './step/step-4.service';
 import { ProcessTaskService } from './process-task.service';
 import { Step2Results } from './model/step-2-results.model';
 import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
-import { Step5Service } from './step-5.service';
+import { Step5Service } from './step/step-5.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,

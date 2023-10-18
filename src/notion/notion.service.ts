@@ -3,7 +3,7 @@ import { NotionDatabase } from '../dao/notion/entity/notion-database.entity';
 import { Injectable } from '@nestjs/common';
 import { NotionConfigService } from './config/notion-config.service';
 import { isNullOrUndefined } from '../util/util';
-import { MusicDataAnalysisResult } from '../youtube/process-pending/model/music-data-analysis-result.model';
+import { MusicDataAnalysisResult } from '../youtube/process/model/music-data-analysis-result.model';
 import { NotionPropertiesMapper } from '../dao/notion/mapper/notion-properties.mapper';
 
 @Injectable()

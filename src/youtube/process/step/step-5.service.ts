@@ -1,12 +1,12 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { AbstractStep } from './abstract-step.class';
-import { ProcessTaskService } from './process-task.service';
-import { TaskService } from '../../task/task.service';
-import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
-import { TaskCategory } from '../../task/model/task-category.enum';
-import { NotionService } from '../../notion/notion.service';
-import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/model/warning-type.enum';
+import { ProcessTaskService } from '../process-task.service';
+import { TaskService } from '../../../task/task.service';
+import { MusicDataAnalysisResult } from '../model/music-data-analysis-result.model';
+import { TaskCategory } from '../../../task/model/task-category.enum';
+import { NotionService } from '../../../notion/notion.service';
+import { WarningService } from '../../../warning/warning.service';
+import { WarningType } from '../../../warning/model/warning-type.enum';
 
 @Injectable({
     scope: Scope.TRANSIENT,

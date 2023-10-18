@@ -12,6 +12,7 @@ export class YoutubeDownloaderPythonRepository {
     private readonly LIST_ID_SCRIPT_PATH: string;
     private readonly CHECK_DIFF_SCRIPT_PATH: string;
     private readonly DOWNLOAD_PLAYLIST_SCRIPT_PATH: string;
+    private readonly DOWNLOAD_ONE_VIDEO_SCRIPT_PATH: string;
     private readonly DOWNLOAD_ARCHIVE_DIRECTORY_PATH: string;
     private readonly DOWNLOAD_ARCHIVE_NAME: string;
     private readonly DOWNLOAD_OUTPUT_DIRECTORY_PATH: string;
@@ -21,6 +22,7 @@ export class YoutubeDownloaderPythonRepository {
         this.LIST_ID_SCRIPT_PATH = process.env.YT_DLP_LIST_ID_SCRIPT_PATH || '';
         this.CHECK_DIFF_SCRIPT_PATH = process.env.YT_DLP_CHECK_DIFF_SCRIPT_PATH || '';
         this.DOWNLOAD_PLAYLIST_SCRIPT_PATH = process.env.YT_DLP_DOWNLOAD_PLAYLIST_SCRIPT_PATH || '';
+        this.DOWNLOAD_ONE_VIDEO_SCRIPT_PATH = process.env.YT_DLP_DOWNLOAD_ONE_VIDEO_SCRIPT_PATH || '';
         this.DOWNLOAD_ARCHIVE_DIRECTORY_PATH = process.env.YT_DLP_DOWNLOAD_ARCHIVE_DIRECTORY_PATH || '';
         this.DOWNLOAD_ARCHIVE_NAME = process.env.YT_DLP_DOWNLOAD_ARCHIVE_NAME || '';
         this.DOWNLOAD_OUTPUT_DIRECTORY_PATH = process.env.YT_DLP_DOWNLOAD_OUTPUT_DIRECTORY_PATH || '';
@@ -67,6 +69,33 @@ export class YoutubeDownloaderPythonRepository {
 
         if (stderr) {
             console.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
+        }
+
+        const filesDownloadedInfoFilepath = (<string>stdout)?.trim();
+
+        return filesDownloadedInfoFilepath;
+    }
+
+    async downloadOneVideo(token: string, videoId: string): Promise<string> {
+        const currentUser = await this.authService.getCurrentUser();
+
+        const args = [
+            token,
+            `${this.DOWNLOAD_OUTPUT_DIRECTORY_PATH}/${currentUser?.id}`,
+            videoId,
+        ];
+
+        const {
+            stdout,
+            stderr ,
+        } = await this.execScript(this.DOWNLOAD_ONE_VIDEO_SCRIPT_PATH, ...args);
+
+        if (stderr) {
+            console.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
+
+            if (isString(stderr)) {
+                await this.warningService.createWarning(videoId, WarningType.NOT_DOWNLOADED, stderr);
+            }
         }
 
         const filesDownloadedInfoFilepath = (<string>stdout)?.trim();
