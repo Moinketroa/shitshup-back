@@ -34,7 +34,7 @@ export class TaskEntity {
     @JoinColumn()
     user: UserEntity;
 
-    @TreeParent()
+    @TreeParent({ onDelete: 'CASCADE' })
     parentTask?: TaskEntity;
 
     @TreeChildren()
