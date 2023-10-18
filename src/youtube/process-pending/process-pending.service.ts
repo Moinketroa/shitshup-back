@@ -75,7 +75,7 @@ export class ProcessPendingService {
     }
 
     private async triggerStep3(youtubeUser: YoutubeUser, allIdsToProcess: string[], step2Results: Step2Results) {
-        await this.step3.stepMoveVideosFromPendingToProcessed(youtubeUser, allIdsToProcess, step2Results.idsNotDownloaded);
+        await this.step3.stepDeleteVideosFromPending(youtubeUser, allIdsToProcess, step2Results.idsNotDownloaded);
 
         await this.processTaskService.incrementTasksDone();
     }

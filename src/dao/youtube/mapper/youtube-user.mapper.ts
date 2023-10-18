@@ -25,8 +25,6 @@ export class YoutubeUserMapper {
             photoUrl: youtubeUserEntity.photoUrl,
             displayName: this.buildDisplayName(youtubeUserEntity),
             pendingPlaylistId: youtubeUserEntity.pendingPlaylistId,
-            processedPlaylistId: youtubeUserEntity.processedPlaylistId,
-            waitingPlaylistId: youtubeUserEntity.waitingPlaylistId,
         };
     }
 

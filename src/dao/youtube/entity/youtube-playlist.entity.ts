@@ -7,6 +7,4 @@ export class YoutubePlaylist {
 
 export class YoutubeShitshupPlaylists {
     pendingPlaylist: YoutubePlaylist;
-    processedPlaylist: YoutubePlaylist;
-    waitingPlaylist: YoutubePlaylist;
 }

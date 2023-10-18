@@ -14,8 +14,6 @@ import { WarningType } from '../../warning/model/warning-type.enum';
 export class Step3Service extends AbstractStep {
 
     private readonly NOT_DELETED_WARNING_MESSAGE: string = '[Step 3] Cannot delete video from pending playlist';
-    private readonly NOT_ADDED_WARNING_MESSAGE: string = '[Step 3] Cannot add video to processed playlist';
-
     constructor(processTaskService: ProcessTaskService,
                 taskService: TaskService,
                 warningService: WarningService,
@@ -23,12 +21,12 @@ export class Step3Service extends AbstractStep {
         super(processTaskService, taskService, warningService);
     }
 
-    async stepMoveVideosFromPendingToProcessed(
+    async stepDeleteVideosFromPending(
         youtubeUser: YoutubeUser,
         allIdsToProcess: string[],
         notDownloadedIds: string[],
     ): Promise<void> {
-        await this.initStepTask(TaskCategory.STEP3, 2);
+        await this.initStepTask(TaskCategory.STEP3, 1);
 
         const result = await this.triggerStepProcess(youtubeUser, allIdsToProcess, notDownloadedIds);
 
@@ -51,14 +49,9 @@ export class Step3Service extends AbstractStep {
         }
 
         await this.triggerSubStepDeleteIdsFromPending(youtubeUser, allDownloadedIds);
-
-        await this.triggerSubStepAddIdsToProcessed(youtubeUser, allDownloadedIds);
-
-        console.log('[PROCESS_PENDING][STEP 3] Moving done.');
     }
 
     private async triggerSubStepDeleteIdsFromPending(youtubeUser: YoutubeUser, allDownloadedIds: string[]): Promise<void> {
-        console.log('[PROCESS_PENDING][STEP 3] Moving videos from pending playlist to processed playlist.');
         const subTask = await this.createSubStepTask(TaskCategory.SUB3_DELETE_IDS_FROM_PENDING, allDownloadedIds.length);
 
         return await this.runSubTask(subTask, async () => {
@@ -80,33 +73,6 @@ export class Step3Service extends AbstractStep {
                 downloadedId,
                 WarningType.CANNOT_DELETE_FROM_PLAYLIST,
                 `${this.NOT_DELETED_WARNING_MESSAGE} ${e.toString()}`,
-            )
-        } finally {
-            await this.progressStepTask();
-        }
-    }
-
-    private async triggerSubStepAddIdsToProcessed(youtubeUser: YoutubeUser, allDownloadedIds: string[]): Promise<void> {
-        console.log('[PROCESS_PENDING][STEP 3] Proceeding to adding videos to processed playlist.');
-        const subTask = await this.createSubStepTask(TaskCategory.SUB3_ADD_IDS_TO_PROCESSED, allDownloadedIds.length);
-
-        return await this.runSubTask(subTask, async () => {
-            for (const downloadedId of allDownloadedIds) {
-                await this.addIdToProcessed(youtubeUser, downloadedId);
-            }
-
-            console.log('[PROCESS_PENDING][STEP 3] Videos added to processed playlist.');
-        });
-    }
-
-    private async addIdToProcessed(youtubeUser: YoutubeUser, downloadedId: string) {
-        try {
-            await this.youtubePlaylistRepository.addIdToPlaylist(youtubeUser.processedPlaylistId, downloadedId);
-        } catch (e: any) {
-            await this.createWarning(
-                downloadedId,
-                WarningType.CANNOT_ADD_TO_PLAYLIST,
-                `${this.NOT_ADDED_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
             await this.progressStepTask();

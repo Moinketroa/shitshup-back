@@ -30,8 +30,6 @@ export class YoutubeService {
             await this.youtubeAuthService.updateUserPlaylists(
                 youtubeUser,
                 newYoutubePlaylists.pendingPlaylist.id,
-                newYoutubePlaylists.processedPlaylist.id,
-                newYoutubePlaylists.waitingPlaylist.id,
             );
 
             return newYoutubePlaylists;

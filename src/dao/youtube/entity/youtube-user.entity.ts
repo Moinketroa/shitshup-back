@@ -24,12 +24,6 @@ export class YoutubeUserEntity {
     @Column({ nullable: true })
     pendingPlaylistId: string;
 
-    @Column({ nullable: true })
-    processedPlaylistId: string;
-
-    @Column({ nullable: true })
-    waitingPlaylistId: string;
-
     @OneToOne(() => UserEntity, (user) => user.youtubeUser)
     user: UserEntity;
 }

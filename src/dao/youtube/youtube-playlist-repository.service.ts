@@ -12,19 +12,13 @@ import { YoutubeShitshupPlaylists } from './entity/youtube-playlist.entity';
 import * as process from 'process';
 import { YoutubePlaylistPreviewMapper } from './mapper/youtube-playlist-preview.mapper';
 import { YoutubePlaylistPreview } from './entity/youtube-playlist-preview.entity';
-import { pull } from 'lodash';
 import { YoutubePart } from './type/youtube-part.enum';
-import { YoutubeRessourceKind } from './type/youtube-ressource-kind.enum';
 
 @Injectable()
 export class YoutubePlaylistRepository {
 
     private readonly DEFAULT_PENDING_PLAYLIST_NAME: string;
     private readonly DEFAULT_PENDING_PLAYLIST_DESCRIPTION: string;
-    private readonly DEFAULT_PROCESSED_PLAYLIST_NAME: string;
-    private readonly DEFAULT_PROCESSED_PLAYLIST_DESCRIPTION: string;
-    private readonly DEFAULT_WAITING_PLAYLIST_NAME: string;
-    private readonly DEFAULT_WAITING_PLAYLIST_DESCRIPTION: string;
 
     constructor(
         private readonly youtubeClient: YoutubeClient,
@@ -33,19 +27,10 @@ export class YoutubePlaylistRepository {
     ) {
         this.DEFAULT_PENDING_PLAYLIST_NAME = process.env.YOUTUBE_DEFAULT_PENDING_PLAYLIST_NAME || '';
         this.DEFAULT_PENDING_PLAYLIST_DESCRIPTION = process.env.YOUTUBE_DEFAULT_PENDING_PLAYLIST_DESCRIPTION || '';
-        this.DEFAULT_PROCESSED_PLAYLIST_NAME = process.env.YOUTUBE_DEFAULT_PROCESSED_PLAYLIST_NAME || '';
-        this.DEFAULT_PROCESSED_PLAYLIST_DESCRIPTION = process.env.YOUTUBE_DEFAULT_PROCESSED_PLAYLIST_DESCRIPTION || '';
-        this.DEFAULT_WAITING_PLAYLIST_NAME = process.env.YOUTUBE_DEFAULT_WAITING_PLAYLIST_NAME || '';
-        this.DEFAULT_WAITING_PLAYLIST_DESCRIPTION = process.env.YOUTUBE_DEFAULT_WAITING_PLAYLIST_DESCRIPTION || '';
     }
 
     async getYoutubePlaylists(youtubeUser: YoutubeUser): Promise<YoutubeShitshupPlaylists | null> {
-        if (
-            isNullOrUndefined(youtubeUser.pendingPlaylistId) ||
-            isNullOrUndefined(youtubeUser.processedPlaylistId) ||
-            isNullOrUndefined(youtubeUser.waitingPlaylistId)
-        ) {
-            // one of the playlist is missing => simple interpretation : no playlists, return nothing
+        if (isNullOrUndefined(youtubeUser.pendingPlaylistId)) {
             return null;
         } else {
             return this.fetchAndMapYoutubePlaylists(youtubeUser);
@@ -58,21 +43,17 @@ export class YoutubePlaylistRepository {
         const youtubeUserPlaylists: YoutubeClientPlaylist[] = youtubeUserPlaylistsResponse?.items ?? [];
 
         const pendingPlaylist: YoutubeClientPlaylist | undefined = this.findPlaylistById(youtubeUserPlaylists, youtubeUser.pendingPlaylistId);
-        const processedPlaylist: YoutubeClientPlaylist | undefined = this.findPlaylistById(youtubeUserPlaylists, youtubeUser.processedPlaylistId);
-        const waitingPlaylist: YoutubeClientPlaylist | undefined = this.findPlaylistById(youtubeUserPlaylists, youtubeUser.waitingPlaylistId);
 
-        return this.mapPlaylists(pendingPlaylist, processedPlaylist, waitingPlaylist);
+        return this.mapPlaylists(pendingPlaylist);
     }
 
     private async fetchYoutubePlaylists(youtubeUser: YoutubeUser): Promise<YoutubeClientPlaylistResponse> {
         const youtubePlaylistsIds: string[] = [
             youtubeUser.pendingPlaylistId,
-            youtubeUser.processedPlaylistId,
-            youtubeUser.waitingPlaylistId,
         ];
 
         const youtubePlaylistsResponse = await this.youtubeClient.playlists.list({
-            part: [YoutubePart.SNIPPET],
+            part: [ YoutubePart.SNIPPET ],
             id: youtubePlaylistsIds,
             maxResults: youtubePlaylistsIds.length,
         });
@@ -89,50 +70,28 @@ export class YoutubePlaylistRepository {
 
     private mapPlaylists(
         pendingPlaylist?: YoutubeClientPlaylist,
-        processedPlaylist?: YoutubeClientPlaylist,
-        waitingPlaylist?: YoutubeClientPlaylist,
     ): YoutubeShitshupPlaylists {
-        if (
-            isNullOrUndefined(pendingPlaylist) ||
-            isNullOrUndefined(processedPlaylist) ||
-            isNullOrUndefined(waitingPlaylist)
-        ) {
-            throw new BadRequestException(`Ids provided for the playlists don't refer to actual playlists`);
+        if (isNullOrUndefined(pendingPlaylist)) {
+            throw new BadRequestException(`Id provided for the playlist don't refer to an actual playlist`);
         } else {
             return this.youtubePlaylistMapper.mapToYoutubeShitshupPlaylists(
                 pendingPlaylist,
-                processedPlaylist,
-                waitingPlaylist,
             );
         }
     }
 
     async createYoutubePlaylists(): Promise<YoutubeShitshupPlaylists> {
-        const [
-            pendingPlaylist,
-            processedPlaylist,
-            waitingPlaylist,
-        ] = await Promise.all([
-            this.createYoutubePlaylist(
-                this.DEFAULT_PENDING_PLAYLIST_NAME,
-                this.DEFAULT_PENDING_PLAYLIST_DESCRIPTION,
-            ),
-            this.createYoutubePlaylist(
-                this.DEFAULT_PROCESSED_PLAYLIST_NAME,
-                this.DEFAULT_PROCESSED_PLAYLIST_DESCRIPTION,
-            ),
-            this.createYoutubePlaylist(
-                this.DEFAULT_WAITING_PLAYLIST_NAME,
-                this.DEFAULT_WAITING_PLAYLIST_DESCRIPTION,
-            ),
-        ]);
+        const pendingPlaylist = await this.createYoutubePlaylist(
+            this.DEFAULT_PENDING_PLAYLIST_NAME,
+            this.DEFAULT_PENDING_PLAYLIST_DESCRIPTION,
+        );
 
-        return this.mapPlaylists(pendingPlaylist, processedPlaylist, waitingPlaylist);
+        return this.mapPlaylists(pendingPlaylist);
     }
 
     private async createYoutubePlaylist(title: string, description: string): Promise<YoutubeClientPlaylist> {
         const createYoutubePlaylistsResponse = await this.youtubeClient.playlists.insert({
-            part: [YoutubePart.SNIPPET],
+            part: [ YoutubePart.SNIPPET ],
             requestBody: {
                 snippet: {
                     title,
@@ -157,42 +116,23 @@ export class YoutubePlaylistRepository {
     }
 
     async deleteIdFromPlaylist(playlistId: string, idToDelete: string): Promise<void> {
-        console.log(`[YoutubePlaylistRepository] Searching for ${idToDelete} videos playlistItem`);
+        console.log(`[YoutubePlaylistRepository] Searching for ${ idToDelete } videos playlistItem`);
         const playlistItemToDelete: YoutubeClientPlaylistItem | null = await this.fetchPlaylistItemToDelete(
             playlistId,
             idToDelete,
         );
 
         if (isNullOrUndefined(playlistItemToDelete)) {
-            throw new Error("Playlist Item to delete can't be found. Did you already delete it ?");
+            throw new Error('Playlist Item to delete can\'t be found. Did you already delete it ?');
         }
 
-        console.log(`[YoutubePlaylistRepository] Deleting video from playlist ${playlistId}`);
+        console.log(`[YoutubePlaylistRepository] Deleting video from playlist ${ playlistId }`);
         await this.removePlaylistItem(playlistId, playlistItemToDelete);
-    }
-
-    async addIdToPlaylist(playlistId: string, idToInsert: string): Promise<void> {
-        console.log(`[YoutubePlaylistRepository] Adding video ${idToInsert} to playlist ${playlistId}`);
-
-        await this.youtubeClient.playlistItems.insert({
-            part: [YoutubePart.SNIPPET],
-            requestBody: {
-                snippet: {
-                    playlistId: playlistId,
-                    resourceId: {
-                        kind: YoutubeRessourceKind.VIDEO,
-                        videoId: idToInsert,
-                    },
-                },
-            },
-        });
-
-        console.log(`[YoutubePlaylistRepository] Video ${idToInsert} added`);
     }
 
     private async getPlaylistPreview(playlistId: string): Promise<YoutubeClientPlaylistItemResponse> {
         const playListPreviewResponse = await this.youtubeClient.playlistItems.list({
-            part: [YoutubePart.SNIPPET],
+            part: [ YoutubePart.SNIPPET ],
             playlistId,
         });
 
@@ -201,7 +141,7 @@ export class YoutubePlaylistRepository {
 
     private async getPlaylistPage(playlistId: string, pageToken?: string): Promise<YoutubeClientPlaylistItemResponse> {
         const playListPageResponse = await this.youtubeClient.playlistItems.list({
-            part: [YoutubePart.CONTENT_DETAILS],
+            part: [ YoutubePart.CONTENT_DETAILS ],
             playlistId,
             maxResults: 50,
             pageToken,
@@ -241,11 +181,11 @@ export class YoutubePlaylistRepository {
         }
 
         console.log(
-            `[YoutubePlaylistRepository] Deleting video ${playlistItem.contentDetails?.videoId} from playlist ${playlistId}`,
+            `[YoutubePlaylistRepository] Deleting video ${ playlistItem.contentDetails?.videoId } from playlist ${ playlistId }`,
         );
         await this.youtubeClient.playlistItems.delete({
             id: playlistItem.id,
         });
-        console.log(`[YoutubePlaylistRepository] Video ${playlistItem.contentDetails?.videoId} deleted`);
+        console.log(`[YoutubePlaylistRepository] Video ${ playlistItem.contentDetails?.videoId } deleted`);
     }
 }

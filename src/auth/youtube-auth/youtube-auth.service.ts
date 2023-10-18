@@ -118,13 +118,9 @@ export class YoutubeAuthService {
     updateUserPlaylists(
         youtubeUser: YoutubeUser,
         pendingPlaylistId: string,
-        processedPlaylistId: string,
-        waitingPlaylistId: string,
     ): Promise<any> {
         const youtubeUserUpdate: Partial<YoutubeUserEntity> = {
             pendingPlaylistId,
-            processedPlaylistId,
-            waitingPlaylistId,
         };
 
         if (isNullOrUndefined(youtubeUser.id)) {

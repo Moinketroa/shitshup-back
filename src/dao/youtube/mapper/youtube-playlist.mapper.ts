@@ -16,13 +16,9 @@ export class YoutubePlaylistMapper {
 
     mapToYoutubeShitshupPlaylists(
         pendingPlaylist: YoutubeClientPlaylist,
-        processedPlaylist: YoutubeClientPlaylist,
-        waitingPlaylist: YoutubeClientPlaylist,
     ): YoutubeShitshupPlaylists {
         return <YoutubeShitshupPlaylists>{
             pendingPlaylist: this.mapToYoutubePlaylist(pendingPlaylist),
-            processedPlaylist: this.mapToYoutubePlaylist(processedPlaylist),
-            waitingPlaylist: this.mapToYoutubePlaylist(waitingPlaylist),
         };
     }
 
