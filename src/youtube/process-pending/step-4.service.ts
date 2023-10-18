@@ -10,7 +10,7 @@ import { TaskService } from '../../task/task.service';
 import { TaskCategory } from '../../task/model/task-category.enum';
 import { Task } from '../../task/model/task.model';
 import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { WarningType } from '../../warning/model/warning-type.enum';
 import { AuthService } from '../../auth/auth.service';
 
 @Injectable({

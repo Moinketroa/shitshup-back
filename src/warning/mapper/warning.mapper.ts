@@ -1,7 +1,8 @@
 import { WarningEntity } from '../../dao/warning/entity/warning.entity';
 import { Warning } from '../model/warning.model';
 import { UserEntity } from '../../dao/user/entity/user.entity';
-import { WarningType } from './warning-type.enum';
+import { WarningType } from '../model/warning-type.enum';
+import { DateTime } from 'luxon';
 
 export class WarningMapper {
 
@@ -10,6 +11,7 @@ export class WarningMapper {
             videoId: warningEntity.videoId,
             warningType: warningEntity.warningType,
             warningMessage: warningEntity.warningMessage,
+            createDate: DateTime.fromJSDate(warningEntity.createdAt, { zone: 'utc' }).toISO(),
         };
     }
 

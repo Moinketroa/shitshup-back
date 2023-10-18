@@ -6,4 +6,5 @@ export class Task {
     hasFailed: boolean;
     children?: Task[];
     parentId?: string;
+    createDate: string;
 }

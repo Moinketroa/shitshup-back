@@ -5,7 +5,7 @@ import { isDefined } from '../../util/util';
 import { TaskCategory } from '../../task/model/task-category.enum';
 import { TaskName } from '../../task/model/task-name.model';
 import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { WarningType } from '../../warning/model/warning-type.enum';
 
 export class AbstractStep {
 

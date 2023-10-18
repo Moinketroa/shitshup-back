@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from '../../user/entity/user.entity';
 
 @Entity('warnings')
@@ -19,5 +19,8 @@ export class WarningEntity {
 
     @Column("text")
     warningMessage: string;
+
+    @CreateDateColumn()
+    createdAt: Date;
 
 }

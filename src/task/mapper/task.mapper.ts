@@ -3,6 +3,7 @@ import { TaskName } from '../model/task-name.model';
 import { TaskEntity } from '../../dao/task/entity/task.entity';
 import { Task } from '../model/task.model';
 import { UserEntity } from '../../dao/user/entity/user.entity';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class TaskMapper {
@@ -25,6 +26,7 @@ export class TaskMapper {
             tasksDone: taskEntity.tasksDone,
             hasFailed: taskEntity.hasFailed,
             parentId: taskEntity.parentTask?.id,
+            createDate: DateTime.fromJSDate(taskEntity.createdAt, { zone: 'utc' }).toISO(),
         }
     }
 
