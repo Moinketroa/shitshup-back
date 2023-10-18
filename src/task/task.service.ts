@@ -45,6 +45,10 @@ export class TaskService {
         return allCurrentUserTasks.map(taskEntity => this.taskMapper.treeFromEntity(taskEntity));
     }
 
+    async deleteTask(taskId: string): Promise<void> {
+        await this.taskRepository.delete(taskId);
+    }
+
     async incrementTasksDone(task: Task): Promise<Task> {
         return this.taskMapper.fromEntity(
             await this.taskRepository.incrementTaskDone(task.id!)
