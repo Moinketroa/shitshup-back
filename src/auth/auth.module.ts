@@ -20,7 +20,7 @@ import { WsAuthGuard } from './guard/ws-auth.guard';
         JwtModule.register({
             global: true,
             secret: 'your-secret-key', // Replace with your actual secret key
-            signOptions: { expiresIn: '1h' }, // Set token expiration as needed
+            signOptions: { expiresIn: '1d' }, // Set token expiration as needed
         }),
 
         OAuth2ClientModule,

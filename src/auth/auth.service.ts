@@ -9,7 +9,6 @@ import { isDefined, isNullOrUndefined } from '../util/util';
 import { UserMapper } from './mapper/user.mapper';
 import { OAuth2Client } from 'google-auth-library';
 import { YoutubeAuthService } from './youtube-auth/youtube-auth.service';
-import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
 
 @Injectable()
 export class AuthService {
@@ -33,12 +32,9 @@ export class AuthService {
     }
 
     async validate(id: string) {
-        const userFound = this.userMapper.mapFromEntity((await this.findUser(id))!);
+        const userFound = await this.findUser(id);
 
-        this.oAuth2Client.setCredentials({
-            refresh_token: userFound.googleRefreshToken,
-            access_token: userFound.googleAccessToken,
-        });
+        await this.refreshAccessToken(userFound!);
 
         return this.youtubeAuthService.getCurrentUser();
     }
@@ -48,6 +44,21 @@ export class AuthService {
         const currentYoutubeUserEntity = await this.youtubeAuthService.findYoutubeUser(currentYoutubeUser?.id);
 
         return this.findUser(currentYoutubeUserEntity?.user?.id);
+    }
+
+    private async refreshAccessToken(user: UserEntity): Promise<any> {
+        this.oAuth2Client.setCredentials({
+            refresh_token: user.googleRefreshToken,
+        });
+
+        const accessTokenResponse = await this.oAuth2Client.getAccessToken();
+        const newAccessToken = accessTokenResponse.token;
+
+        const updatedUserEntity = <UserEntity>{
+            ...user,
+            googleAccessToken: newAccessToken!,
+        };
+        await this.userRepository.update(updatedUserEntity.id, updatedUserEntity);
     }
 
     private async findAndUpdateOrCreateUser(user: User): Promise<UserEntity> {
