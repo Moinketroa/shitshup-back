@@ -26,6 +26,10 @@ export class WarningService {
         await this.warningRepository.save(warningToCreate);
     }
 
+    async deleteWarning(warningId: string): Promise<void> {
+        await this.warningRepository.delete(warningId);
+    }
+
     async getAllWarning(): Promise<Warning[]> {
         const currentUser = await this.authService.getCurrentUser();
 

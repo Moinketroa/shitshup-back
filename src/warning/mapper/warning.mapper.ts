@@ -8,6 +8,7 @@ export class WarningMapper {
 
     fromEntity(warningEntity: WarningEntity): Warning {
         return <Warning>{
+            id: warningEntity.id,
             videoId: warningEntity.videoId,
             warningType: warningEntity.warningType,
             warningMessage: warningEntity.warningMessage,
