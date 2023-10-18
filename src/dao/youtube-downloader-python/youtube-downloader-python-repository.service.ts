@@ -3,7 +3,7 @@ import * as process from 'process';
 import { ChildProcessPromise, exec } from 'promisify-child-process';
 import { WarningService } from '../../warning/warning.service';
 import { isString } from '@nestjs/common/utils/shared.utils';
-import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { WarningType } from '../../warning/model/warning-type.enum';
 import { AuthService } from '../../auth/auth.service';
 
 @Injectable()

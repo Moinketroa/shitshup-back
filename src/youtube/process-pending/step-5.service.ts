@@ -6,7 +6,7 @@ import { MusicDataAnalysisResult } from './model/music-data-analysis-result.mode
 import { TaskCategory } from '../../task/model/task-category.enum';
 import { NotionService } from '../../notion/notion.service';
 import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { WarningType } from '../../warning/model/warning-type.enum';
 
 @Injectable({
     scope: Scope.TRANSIENT,

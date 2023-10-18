@@ -1,5 +1,6 @@
 import {
     Column,
+    CreateDateColumn,
     Entity,
     JoinColumn,
     OneToOne,
@@ -38,5 +39,8 @@ export class TaskEntity {
 
     @TreeChildren()
     subTasks?: TaskEntity[];
+
+    @CreateDateColumn()
+    createdAt: Date;
 
 }

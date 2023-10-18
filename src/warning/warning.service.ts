@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WarningRepository } from '../dao/warning/warning.repository';
 import { AuthService } from '../auth/auth.service';
 import { WarningMapper } from './mapper/warning.mapper';
-import { WarningType } from './mapper/warning-type.enum';
+import { WarningType } from './model/warning-type.enum';
 import { Warning } from './model/warning.model';
 
 @Injectable()

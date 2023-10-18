@@ -6,7 +6,7 @@ import { ProcessTaskService } from './process-task.service';
 import { TaskService } from '../../task/task.service';
 import { TaskCategory } from '../../task/model/task-category.enum';
 import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/mapper/warning-type.enum';
+import { WarningType } from '../../warning/model/warning-type.enum';
 
 @Injectable({
     scope: Scope.TRANSIENT,
