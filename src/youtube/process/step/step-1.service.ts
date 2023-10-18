@@ -1,14 +1,14 @@
 import { Injectable, Scope } from '@nestjs/common';
 import {
     YoutubeDownloaderPythonRepository,
-} from '../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
-import { YoutubePlaylistRepository } from '../../dao/youtube/youtube-playlist-repository.service';
+} from '../../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
+import { YoutubePlaylistRepository } from '../../../dao/youtube/youtube-playlist-repository.service';
 import { AbstractStep } from './abstract-step.class';
-import { ProcessTaskService } from './process-task.service';
-import { TaskService } from '../../task/task.service';
-import { TaskCategory } from '../../task/model/task-category.enum';
-import { WarningType } from '../../warning/model/warning-type.enum';
-import { WarningService } from '../../warning/warning.service';
+import { ProcessTaskService } from '../process-task.service';
+import { TaskService } from '../../../task/task.service';
+import { TaskCategory } from '../../../task/model/task-category.enum';
+import { WarningType } from '../../../warning/model/warning-type.enum';
+import { WarningService } from '../../../warning/warning.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,

@@ -1,17 +1,17 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { FileInfo } from '../../dao/youtube-downloader-python/model/file-info.model';
-import { EssentiaService } from '../../essentia/essentia.service';
+import { FileInfo } from '../../../dao/youtube-downloader-python/model/file-info.model';
+import { EssentiaService } from '../../../essentia/essentia.service';
 import { catchError, finalize, firstValueFrom, map, Observable, tap, throwError } from 'rxjs';
-import { MusicDataMapper } from './mapper/music-data.mapper';
-import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
+import { MusicDataMapper } from '../mapper/music-data.mapper';
+import { MusicDataAnalysisResult } from '../model/music-data-analysis-result.model';
 import { AbstractStep } from './abstract-step.class';
-import { ProcessTaskService } from './process-task.service';
-import { TaskService } from '../../task/task.service';
-import { TaskCategory } from '../../task/model/task-category.enum';
-import { Task } from '../../task/model/task.model';
-import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/model/warning-type.enum';
-import { AuthService } from '../../auth/auth.service';
+import { ProcessTaskService } from '../process-task.service';
+import { TaskService } from '../../../task/task.service';
+import { TaskCategory } from '../../../task/model/task-category.enum';
+import { Task } from '../../../task/model/task.model';
+import { WarningService } from '../../../warning/warning.service';
+import { WarningType } from '../../../warning/model/warning-type.enum';
+import { AuthService } from '../../../auth/auth.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,

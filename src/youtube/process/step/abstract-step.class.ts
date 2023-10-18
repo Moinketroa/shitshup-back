@@ -1,11 +1,11 @@
-import { Task } from '../../task/model/task.model';
-import { ProcessTaskService } from './process-task.service';
-import { TaskService } from '../../task/task.service';
-import { isDefined } from '../../util/util';
-import { TaskCategory } from '../../task/model/task-category.enum';
-import { TaskName } from '../../task/model/task-name.model';
-import { WarningService } from '../../warning/warning.service';
-import { WarningType } from '../../warning/model/warning-type.enum';
+import { Task } from '../../../task/model/task.model';
+import { ProcessTaskService } from '../process-task.service';
+import { TaskService } from '../../../task/task.service';
+import { isDefined } from '../../../util/util';
+import { TaskCategory } from '../../../task/model/task-category.enum';
+import { TaskName } from '../../../task/model/task-name.model';
+import { WarningService } from '../../../warning/warning.service';
+import { WarningType } from '../../../warning/model/warning-type.enum';
 
 export class AbstractStep {
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '../auth/guard/auth.guard';
 import { YoutubeService } from './youtube.service';
 import { YoutubeUserParam } from '../auth/youtube-auth/youtube-user.decorator';
@@ -31,5 +31,10 @@ export class YoutubeController {
     @Get('process/pending')
     processPending(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<any> {
         return this.youtubeService.triggerProcessPending(youtubeUser);
+    }
+
+    @Get('process/video/:videoId')
+    processOneVideo(@YoutubeUserParam() youtubeUser: YoutubeUser, @Param('videoId') videoId: string): Promise<any> {
+        return this.youtubeService.triggerProcessOneVideo(youtubeUser, videoId);
     }
 }

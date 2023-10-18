@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { NotionDatabaseColumn } from '../schema/notion-database-column.enum';
-import { MusicDataAnalysisResult } from '../../../youtube/process-pending/model/music-data-analysis-result.model';
+import { MusicDataAnalysisResult } from '../../../youtube/process/model/music-data-analysis-result.model';
 
 @Injectable()
 export class NotionPropertiesMapper {
