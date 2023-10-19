@@ -4,12 +4,16 @@ import { AuthService } from '../auth/auth.service';
 import { WarningMapper } from './mapper/warning.mapper';
 import { WarningType } from './model/warning-type.enum';
 import { Warning } from './model/warning.model';
+import { WarningNotificationGateway } from './warning-notification/warning-notification.gateway';
+import { UserEntity } from '../dao/user/entity/user.entity';
+import { WarningEntity } from '../dao/warning/entity/warning.entity';
 
 @Injectable()
 export class WarningService {
 
     constructor(private readonly warningRepository: WarningRepository,
                 private readonly warningMapper: WarningMapper,
+                private readonly warningNotificationGateway: WarningNotificationGateway,
                 private readonly authService: AuthService,) {
     }
 
@@ -23,7 +27,18 @@ export class WarningService {
             currentUser!,
         );
 
-        await this.warningRepository.save(warningToCreate);
+        const createdWarning = await this.warningRepository.save(warningToCreate);
+
+        await this.sendWarningNotification(currentUser!, createdWarning);
+    }
+
+    private async sendWarningNotification(currentUser: UserEntity, warningEntity: WarningEntity): Promise<void> {
+        this.warningNotificationGateway.server
+            .to(currentUser.id)
+            .emit(
+                'warnings-notifications',
+                this.warningMapper.fromEntity(warningEntity)
+            );
     }
 
     async deleteWarning(warningId: string): Promise<void> {

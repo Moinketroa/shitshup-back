@@ -4,10 +4,12 @@ import { WarningService } from './warning.service';
 import { WarningMapper } from './mapper/warning.mapper';
 import { WarningController } from './warning.controller';
 import { AuthModule } from '../auth/auth.module';
+import { WarningNotificationModule } from './warning-notification/warning-notification.module';
 
 @Module({
     imports: [
         WarningPersistenceModule,
+        WarningNotificationModule,
         AuthModule,
     ],
     controllers: [
