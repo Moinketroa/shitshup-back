@@ -8,6 +8,7 @@ import { ProcessTaskService } from './process-task.service';
 import { Step2Results } from './model/step-2-results.model';
 import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
 import { Step5Service } from './step/step-5.service';
+import { Step6Service } from './step/step-6.service';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -20,12 +21,13 @@ export class ProcessPendingService {
         private readonly step3: Step3Service,
         private readonly step4: Step4Service,
         private readonly step5: Step5Service,
+        private readonly step6: Step6Service,
         private readonly processTaskService: ProcessTaskService,
     ) {
     }
 
     async processPending(youtubeUser: YoutubeUser, token: string): Promise<any> {
-        await this.processTaskService.initProcessMainTask(5);
+        await this.processTaskService.initProcessMainTask(6);
 
         const allIdsToProcess = await this.triggerStep1(youtubeUser, token);
 
@@ -43,6 +45,8 @@ export class ProcessPendingService {
         const musicDataAnalysisResults = await this.triggerStep4(step2Results);
 
         await this.triggerStep5(musicDataAnalysisResults);
+
+        await this.triggerStep6(step2Results);
 
         console.log('[PROCESS_PENDING] Process ended.');
         await this.processTaskService.completeTask();
@@ -90,6 +94,12 @@ export class ProcessPendingService {
 
     private async triggerStep5(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
         await this.step5.stepPushResultsToNotion(musicDataAnalysisResults);
+
+        await this.processTaskService.incrementTasksDone();
+    }
+
+    private async triggerStep6(step2Results: Step2Results) {
+        await this.step6.stepGetSpleeterData(step2Results.fileInfos);
 
         await this.processTaskService.incrementTasksDone();
     }

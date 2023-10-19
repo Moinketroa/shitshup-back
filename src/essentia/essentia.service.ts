@@ -18,6 +18,10 @@ export class EssentiaService {
                 map((musicDataEntity: MusicDataEntity) => {
                     return this.essentiaMusicDataMapper.mapFromEntity(musicDataEntity);
                 })
-            )
+            );
+    }
+
+    getSpleeterData(filePath: string, userId: string, outputLocationPath: string): Observable<void> {
+        return this.essentiaHttpService.fetchSpleeterData(filePath, userId, outputLocationPath)
     }
 }
