@@ -7,6 +7,8 @@ import { TaskCategory } from '../../../task/model/task-category.enum';
 import { NotionService } from '../../../notion/notion.service';
 import { WarningService } from '../../../warning/warning.service';
 import { WarningType } from '../../../warning/model/warning-type.enum';
+import { Step5Result } from '../model/step-5-result.model';
+import { isDefined } from '../../../util/util';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -22,7 +24,7 @@ export class Step5Service extends AbstractStep {
         super(processTaskService, taskService, warningService);
     }
 
-    async stepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
+    async stepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<Step5Result[]> {
         await this.initStepTask(TaskCategory.STEP5, 1);
 
         const result = await this.triggerStepProcess(musicDataAnalysisResults);
@@ -32,26 +34,36 @@ export class Step5Service extends AbstractStep {
         return result;
     }
 
-    private async triggerStepProcess(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
+    private async triggerStepProcess(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<Step5Result[]> {
         return await this.triggerSubStepPushResultsToNotion(musicDataAnalysisResults);
     }
 
-    private async triggerSubStepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
+    private async triggerSubStepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<Step5Result[]> {
         console.log('[PROCESS_PENDING][STEP 5] Pushing results to Notion...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB5_PUSH_RESULTS_TO_NOTION, musicDataAnalysisResults.length);
 
+        const results: Step5Result[] = [];
+
         return await this.runSubTask(subTask, async () => {
             for (const musicDataAnalysisResult of musicDataAnalysisResults) {
-                await this.addIdToProcessed(musicDataAnalysisResult);
+                const notionRowId = await this.addAnalysisResultToNotion(musicDataAnalysisResult);
+
+                if (isDefined(notionRowId)) {
+                    results.push(<Step5Result>{
+                        notionRowId: notionRowId,
+                        musicDataAnalysisResult: musicDataAnalysisResult,
+                    });
+                }
             }
 
             console.log('[PROCESS_PENDING][STEP 5] Pushing results to Notion done.');
+            return results;
         });
     }
 
-    private async addIdToProcessed(musicDataAnalysisResult: MusicDataAnalysisResult) {
+    private async addAnalysisResultToNotion(musicDataAnalysisResult: MusicDataAnalysisResult): Promise<string | undefined> {
         try {
-            await this.notionService.addRowToMediaLibrary(musicDataAnalysisResult);
+            return await this.notionService.addRowToMediaLibrary(musicDataAnalysisResult);
         } catch (e: any) {
             await this.createWarning(
                 musicDataAnalysisResult.videoId,

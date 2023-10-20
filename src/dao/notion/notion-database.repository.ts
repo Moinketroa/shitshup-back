@@ -1,5 +1,9 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
-import { DatabaseObjectResponse, GetDatabaseResponse } from '@notionhq/client/build/src/api-endpoints';
+import {
+    CreatePageResponse,
+    DatabaseObjectResponse,
+    GetDatabaseResponse,
+} from '@notionhq/client/build/src/api-endpoints';
 import { NotionDatabaseMapper } from './mapper/notion-database.mapper';
 import * as process from 'process';
 import { NotionConfigEntity } from './entity/notion-config.entity';
@@ -92,8 +96,8 @@ export class NotionDatabaseRepository {
         });
     }
 
-    async createRow(databaseId: string, properties: any): Promise<void> {
-        await this.notionClientWrapper.client.pages.create({
+    async createRow(databaseId: string, properties: any): Promise<CreatePageResponse> {
+        return await this.notionClientWrapper.client.pages.create({
             parent: {
                 database_id: databaseId,
                 type: 'database_id',

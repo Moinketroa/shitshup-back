@@ -33,6 +33,7 @@
     "@notionhq/client": "^2.2.5",
     "axios": "^1.5.1",
     "dotenv": "^16.3.1",
+    "dropbox": "^10.34.0",
     "form-data": "^4.0.0",
     "google-auth-library": "^8.7.0",
     "googleapis": "^118.0.0",

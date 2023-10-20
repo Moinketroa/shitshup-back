@@ -34,12 +34,14 @@ export class NotionService {
         }
     }
 
-    async addRowToMediaLibrary(musicDataAnalysisResult: MusicDataAnalysisResult): Promise<void> {
+    async addRowToMediaLibrary(musicDataAnalysisResult: MusicDataAnalysisResult): Promise<string> {
         const mediaLibrary = await this.getMediaLibrary();
         const rawMediaLibraryDatabaseStructure = await this.notionDatabaseRepository.fetchRawDatabase(mediaLibrary?.id!);
 
         const propertiesRowToAdd = this.notionPropertiesMapper.toNotionProperties(musicDataAnalysisResult, rawMediaLibraryDatabaseStructure.properties);
 
-        await this.notionDatabaseRepository.createRow(mediaLibrary?.id!, propertiesRowToAdd);
+        const createPageResponse = await this.notionDatabaseRepository.createRow(mediaLibrary?.id!, propertiesRowToAdd);
+
+        return createPageResponse.id;
     }
 }
