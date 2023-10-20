@@ -17,6 +17,8 @@ import { AuthModule } from '../../auth/auth.module';
 import { ProcessOneVideoService } from './process-one-video.service';
 import { Step2OneVideoService } from './step/step-2-one-video.service';
 import { Step6Service } from './step/step-6.service';
+import { DropboxModule } from '../../dropbox/dropbox.module';
+import { Step7Service } from './step/step-7.service';
 
 @Module({
     imports: [
@@ -26,6 +28,7 @@ import { Step6Service } from './step/step-6.service';
         TaskModule,
         NotionModule,
         WarningModule,
+        DropboxModule,
         AuthModule,
     ],
     providers: [
@@ -39,6 +42,7 @@ import { Step6Service } from './step/step-6.service';
         Step4Service,
         Step5Service,
         Step6Service,
+        Step7Service,
 
         MusicDataMapper,
 

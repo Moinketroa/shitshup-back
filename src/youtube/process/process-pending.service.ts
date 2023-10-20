@@ -9,6 +9,8 @@ import { Step2Results } from './model/step-2-results.model';
 import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
 import { Step5Service } from './step/step-5.service';
 import { Step6Service } from './step/step-6.service';
+import { Step7Service } from './step/step-7.service';
+import { Step5Result } from './model/step-5-result.model';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -22,12 +24,13 @@ export class ProcessPendingService {
         private readonly step4: Step4Service,
         private readonly step5: Step5Service,
         private readonly step6: Step6Service,
+        private readonly step7: Step7Service,
         private readonly processTaskService: ProcessTaskService,
     ) {
     }
 
     async processPending(youtubeUser: YoutubeUser, token: string): Promise<any> {
-        await this.processTaskService.initProcessMainTask(6);
+        await this.processTaskService.initProcessMainTask(7);
 
         const allIdsToProcess = await this.triggerStep1(youtubeUser, token);
 
@@ -44,9 +47,11 @@ export class ProcessPendingService {
 
         const musicDataAnalysisResults = await this.triggerStep4(step2Results);
 
-        await this.triggerStep5(musicDataAnalysisResults);
+        const step5Results = await this.triggerStep5(musicDataAnalysisResults);
 
         await this.triggerStep6(step2Results);
+
+        await this.triggerStep7(step5Results);
 
         console.log('[PROCESS_PENDING] Process ended.');
         await this.processTaskService.completeTask();
@@ -92,14 +97,22 @@ export class ProcessPendingService {
         return musicDataAnalysisResults;
     }
 
-    private async triggerStep5(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<void> {
-        await this.step5.stepPushResultsToNotion(musicDataAnalysisResults);
+    private async triggerStep5(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<Step5Result[]> {
+        const step5Results = await this.step5.stepPushResultsToNotion(musicDataAnalysisResults);
 
         await this.processTaskService.incrementTasksDone();
+
+        return step5Results;
     }
 
     private async triggerStep6(step2Results: Step2Results) {
         await this.step6.stepGetSpleeterData(step2Results.fileInfos);
+
+        await this.processTaskService.incrementTasksDone();
+    }
+
+    private async triggerStep7(step5Results: Step5Result[]) {
+        await this.step7.stepUploadTrackToDropbox(step5Results);
 
         await this.processTaskService.incrementTasksDone();
     }
