@@ -5,6 +5,7 @@ import { NotionConfigEntity } from './notion/entity/notion-config.entity';
 import { UserEntity } from './user/entity/user.entity';
 import { TaskEntity } from './task/entity/task.entity';
 import { WarningEntity } from './warning/entity/warning.entity';
+import { DropboxUserEntity } from './dropbox/entity/dropbox-user.entity';
 
 const moduleEntities: any[] = [
     YoutubeUserEntity,
@@ -12,6 +13,7 @@ const moduleEntities: any[] = [
     UserEntity,
     TaskEntity,
     WarningEntity,
+    DropboxUserEntity,
 ];
 
 @Module({
