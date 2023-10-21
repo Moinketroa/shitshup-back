@@ -112,7 +112,7 @@ export class ProcessPendingService {
     }
 
     private async triggerStep7(step5Results: Step5Result[]) {
-        await this.step7.stepUploadTrackToDropbox(step5Results);
+        await this.step7.stepLinkNotionRowToUploadFileDropbox(step5Results);
 
         await this.processTaskService.incrementTasksDone();
     }

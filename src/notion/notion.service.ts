@@ -44,4 +44,11 @@ export class NotionService {
 
         return createPageResponse.id;
     }
+
+    async linkFileToPage(pageId: string, fileLink: string) {
+        await this.notionDatabaseRepository.appendExternalFileToBlock(
+            pageId,
+            fileLink,
+        );
+    }
 }

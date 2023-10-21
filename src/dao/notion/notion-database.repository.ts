@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, Optional } from '@nestjs/common';
 import {
+    AppendBlockChildrenResponse,
     CreatePageResponse,
     DatabaseObjectResponse,
     GetDatabaseResponse,
@@ -104,5 +105,20 @@ export class NotionDatabaseRepository {
             },
             properties: properties,
         })
+    }
+
+    async appendExternalFileToBlock(blockId: string, externalFileLink: string): Promise<AppendBlockChildrenResponse> {
+        return await this.notionClientWrapper.client.blocks.children.append({
+            block_id: blockId,
+            children: [ {
+                audio: {
+                    external: {
+                        url: externalFileLink,
+                    },
+                    type: 'external',
+                },
+                type: 'audio',
+            }],
+        });
     }
 }
