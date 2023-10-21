@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, Scope } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './jwt.strategy';
@@ -13,6 +13,9 @@ import { AuthGuard } from './guard/auth.guard';
 import { YoutubeUserEntity } from '../dao/youtube/entity/youtube-user.entity';
 import { WsAuthService } from './ws-auth.service';
 import { WsAuthGuard } from './guard/ws-auth.guard';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { AuthInterceptor } from './auth.interceptor';
+import { AuthRefresherJob } from './auth-refresher.job';
 
 @Module({
     imports: [
@@ -38,6 +41,14 @@ import { WsAuthGuard } from './guard/ws-auth.guard';
 
         WsAuthService,
         WsAuthGuard,
+
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: AuthInterceptor,
+            scope: Scope.REQUEST,
+        },
+
+        AuthRefresherJob,
     ],
     exports: [
         JwtStrategy,
