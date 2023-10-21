@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Dropbox } from 'dropbox';
 import * as fs from 'fs';
-import { DropboxAccount, DropboxFileMetadata } from './type/dropbox-client.type';
+import { DropboxAccount, DropboxFileMetadata, DropboxLinkMetadataReference } from './type/dropbox-client.type';
 
 @Injectable()
 export class DropboxRepository {
@@ -13,6 +13,17 @@ export class DropboxRepository {
         const response = await this.dropboxClient.filesUpload({
             path: '/' + fileName,
             contents: fs.createReadStream(filePath),
+        });
+
+        return response.result;
+    }
+
+    async createSharingLink(dropboxFilePath: string): Promise<DropboxLinkMetadataReference> {
+        const response = await this.dropboxClient.sharingCreateSharedLinkWithSettings({
+            path: dropboxFilePath,
+            settings: {
+                allow_download: true,
+            }
         });
 
         return response.result;
