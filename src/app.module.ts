@@ -6,6 +6,8 @@ import { NotionModule } from './notion/notion.module';
 import { TaskNotificationModule } from './task/task-notification/task-notification.module';
 import { WarningModule } from './warning/warning.module';
 import { TaskModule } from './task/task.module';
+import { DropboxAuthModule } from './auth/dropbox-auth/dropbox-auth.module';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -13,6 +15,9 @@ import { TaskModule } from './task/task.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+
+        AuthModule,
+        DropboxAuthModule,
 
         PersistenceModule,
 

@@ -95,6 +95,7 @@ export class AuthService {
                   },
                   relations: {
                       youtubeUser: true,
+                      dropboxUser: true,
                   },
               })
             : null;

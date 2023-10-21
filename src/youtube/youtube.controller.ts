@@ -5,6 +5,7 @@ import { YoutubeUserParam } from '../auth/youtube-auth/youtube-user.decorator';
 import { YoutubeUser } from '../auth/youtube-auth/model/youtube-user.model';
 import { YoutubeShitshupPlaylists } from '../dao/youtube/entity/youtube-playlist.entity';
 import { YoutubePlaylistPreview } from '../dao/youtube/entity/youtube-playlist-preview.entity';
+import { DropboxAuthGuard } from '../auth/dropbox-auth/guard/dropbox-auth.guard';
 
 @Controller('youtube')
 @UseGuards(AuthGuard)
@@ -29,11 +30,13 @@ export class YoutubeController {
     }
 
     @Get('process/pending')
+    @UseGuards(DropboxAuthGuard)
     processPending(@YoutubeUserParam() youtubeUser: YoutubeUser): Promise<any> {
         return this.youtubeService.triggerProcessPending(youtubeUser);
     }
 
     @Get('process/video/:videoId')
+    @UseGuards(DropboxAuthGuard)
     processOneVideo(@YoutubeUserParam() youtubeUser: YoutubeUser, @Param('videoId') videoId: string): Promise<any> {
         return this.youtubeService.triggerProcessOneVideo(youtubeUser, videoId);
     }
