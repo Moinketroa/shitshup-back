@@ -10,6 +10,7 @@ import { DropboxUserEntity } from '../../dao/dropbox/entity/dropbox-user.entity'
 import { InjectRepository } from '@nestjs/typeorm';
 import { DropboxUser } from './model/dropbox-user.model';
 import { v4 as uuidv4 } from 'uuid';
+import { DropboxRefresherJob } from './dropbox-refresher.job';
 
 @Injectable()
 export class DropboxAuthService {
@@ -17,10 +18,11 @@ export class DropboxAuthService {
     private readonly DROPBOX_REDIRECT_URL: string;
 
     constructor(private readonly dropboxAuth: DropboxAuth,
+                private readonly dropboxRefresherJob: DropboxRefresherJob,
                 private readonly dropboxRepository: DropboxRepository,
                 private readonly dropboxUserMapper: DropboxUserMapper,
-                @InjectRepository(DropboxUserEntity) private readonly dropboxUserRepository: Repository<DropboxUserEntity>,
-                private readonly authService: AuthService) {
+                private readonly authService: AuthService,
+                @InjectRepository(DropboxUserEntity) private readonly dropboxUserRepository: Repository<DropboxUserEntity>,) {
         this.DROPBOX_REDIRECT_URL = process.env.DROPBOX_REDIRECT_URL || '';
     }
 
@@ -84,6 +86,8 @@ export class DropboxAuthService {
 
             this.dropboxAuth.refreshAccessToken();
 
+            this.dropboxRefresherJob.startRefresherJob();
+
             await this.login();
 
             return true;
@@ -95,5 +99,4 @@ export class DropboxAuthService {
 
         return this.dropboxUserMapper.fromEntity(currentUser?.dropboxUser!);
     }
-
 }

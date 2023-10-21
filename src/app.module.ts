@@ -8,6 +8,7 @@ import { WarningModule } from './warning/warning.module';
 import { TaskModule } from './task/task.module';
 import { DropboxAuthModule } from './auth/dropbox-auth/dropbox-auth.module';
 import { AuthModule } from './auth/auth.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 @Module({
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
         ConfigModule.forRoot({
             isGlobal: true,
         }),
+        ScheduleModule.forRoot(),
 
         AuthModule,
         DropboxAuthModule,
