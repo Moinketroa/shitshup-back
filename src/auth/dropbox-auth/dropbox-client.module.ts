@@ -32,7 +32,7 @@ export function dropboxInit(dropboxAuth: DropboxAuth) {
             provide: Dropbox,
             useFactory: dropboxInit,
             inject: [ DropboxAuth ]
-        }
+        },
     ],
     exports: [
         DropboxAuth,
