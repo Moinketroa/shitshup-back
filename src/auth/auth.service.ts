@@ -9,6 +9,7 @@ import { isDefined, isNullOrUndefined } from '../util/util';
 import { UserMapper } from './mapper/user.mapper';
 import { OAuth2Client } from 'google-auth-library';
 import { YoutubeAuthService } from './youtube-auth/youtube-auth.service';
+import { AuthRefresherJob } from './auth-refresher.job';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +18,7 @@ export class AuthService {
         private readonly youtubeAuthService: YoutubeAuthService,
         private readonly jwtService: JwtService,
         private readonly userMapper: UserMapper,
+        private readonly authRefresherJob: AuthRefresherJob,
         @InjectRepository(UserEntity) private readonly userRepository: Repository<UserEntity>,
     ) {}
 
@@ -36,7 +38,11 @@ export class AuthService {
 
         await this.refreshAccessToken(userFound!);
 
-        return this.youtubeAuthService.getCurrentUser();
+        const youtubeUser = await this.youtubeAuthService.getCurrentUser();
+
+        this.authRefresherJob.startRefresherJob();
+
+        return youtubeUser;
     }
 
     async getCurrentUser(): Promise<UserEntity | null> {
