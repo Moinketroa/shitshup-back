@@ -23,13 +23,16 @@ for arg in "${@:4}"; do
   echo "$arg"
 done > "$tempBatchFile"
 
+# Output File Template
+outputTemplate="$outputPath/%(title)s (%(id)s).%(ext)s"
+
 # Output Print File Template
 outputPrintTemplate="id=%(id)s track=%(track)s artist=%(artist)s filepath=%(filepath)s"
 
 # Download all videos in batch file.
 yt-dlp \
 --add-header "Authorization:Bearer $token" \
---output "$outputPath/%(title)s.%(ext)s" \
+--output "$outputTemplate" \
 --audio-format 'mp3' \
 --extract-audio \
 --audio-quality 0 \
