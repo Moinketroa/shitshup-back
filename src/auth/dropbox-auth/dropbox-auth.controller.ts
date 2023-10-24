@@ -29,4 +29,10 @@ export class DropboxAuthController {
         return this.dropboxAuthService.me();
     }
 
+    @Get('logout')
+    @UseGuards(DropboxAuthGuard)
+    logout(): Promise<void> {
+        return this.dropboxAuthService.logout();
+    }
+
 }
