@@ -18,13 +18,16 @@ timestamp=$(date +%Y%m%d%H%M%S)
 # Create a temporary text file for batch-file
 tempOutputPrintFile=$(mktemp "temp_file.output_download_playlist.${timestamp}.txt")
 
+# Output File Template
+outputTemplate="$outputPath/%(title)s (%(id)s).%(ext)s"
+
 # Output Print File Template
 outputPrintTemplate="id=%(id)s track=%(track)s artist=%(artist)s filepath=%(filepath)s"
 
 # Download all videos in batch file.
 yt-dlp \
 --add-header "Authorization:Bearer $token" \
---output "$outputPath/%(title)s.%(ext)s" \
+--output "$outputTemplate" \
 --audio-format 'mp3' \
 --extract-audio \
 --audio-quality 0 \
