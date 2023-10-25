@@ -131,41 +131,39 @@ export class EssentiaMusicDataMapper {
     }
 
     private computeGenresWithPredominantGenre(mostLikelyGenre: MusicDataGenre, allGenresPossible: MusicDataGenre[]): MusicDataGenres {
-        const finalAltGenres: string[] = allGenresPossible
+        const altGenres: string[] = allGenresPossible
             .filter(genre => {
                 return genre.weight >= 5 && genre.weight < 75
             })
             .map(genre => genre.genre);
 
+        const finalAltGenres = lodash.take(altGenres, 2);
+
         return this.createMusicDataGenres(mostLikelyGenre.genre, finalAltGenres);
     }
 
     private computeGenresWithMoreThanOneGenre(allGenresPossible: MusicDataGenre[]): MusicDataGenres {
-        const finalMainGenres: string[] = allGenresPossible
+        const relevantGenres: string[] = allGenresPossible
             .filter(genre => {
-                return genre.weight >= 25 && genre.weight < 75
+                return genre.weight >= 5 && genre.weight < 75
             })
             .map(genre => genre.genre);
-        const finalAltGenres: string[] = allGenresPossible
-            .filter(genre => {
-                return genre.weight >= 5 && genre.weight < 25
-            })
-            .map(genre => genre.genre);
+
+        const finalMainGenres = lodash.take(relevantGenres, 2);
+        const finalAltGenres = lodash.take(lodash.without(relevantGenres, ...finalMainGenres), 2);
 
         return this.createMusicDataGenres(finalMainGenres, finalAltGenres);
     }
 
     private computeGenresWithUncertainGenre(allGenresPossible: MusicDataGenre[]): MusicDataGenres {
-        const finalMainGenres: string[] = allGenresPossible
+        const relevantGenres: string[] = allGenresPossible
             .filter(genre => {
-                return genre.weight >= 10 && genre.weight < 25
+                return genre.weight >= 5 && genre.weight < 25
             })
             .map(genre => genre.genre);
-        const finalAltGenres: string[] = allGenresPossible
-            .filter(genre => {
-                return genre.weight >= 5 && genre.weight < 10
-            })
-            .map(genre => genre.genre);
+
+        const finalMainGenres = lodash.take(relevantGenres, 3);
+        const finalAltGenres = lodash.take(lodash.without(relevantGenres, ...finalMainGenres), 3);
 
         return this.createMusicDataGenres(finalMainGenres, finalAltGenres);
     }

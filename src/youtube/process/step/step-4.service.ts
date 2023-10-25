@@ -49,16 +49,26 @@ export class Step4Service extends AbstractStep {
         console.log('[PROCESS_PENDING][STEP 4] Query Python Server for music data...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB4_ANALYSE_SIMPLE_MUSIC_DATAS, fileInfos.length);
 
-        return await this.runSubTask(subTask, async () => {
-            const $musicDataAnalysisResults = fileInfos.map(
-                fileInfo => this.buildObservable(fileInfo, currentUser?.id!, subTask)
-            );
+        const results: MusicDataAnalysisResult[] = [];
 
-            return Promise.all($musicDataAnalysisResults.map(obs => firstValueFrom(obs)));
+        return await this.runSubTask(subTask, async () => {
+            for (const fileInfo of fileInfos) {
+                results.push(
+                    await this.analyseMusicData(fileInfo, currentUser?.id!, subTask)
+                );
+            }
+
+            return results;
         });
     }
 
-    private buildObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<MusicDataAnalysisResult> {
+    private async analyseMusicData(fileInfo: FileInfo, userId: string, parentTask: Task) {
+        return await firstValueFrom(
+            this.buildAnalyseMusicDataObservable(fileInfo, userId, parentTask)
+        );
+    }
+
+    private buildAnalyseMusicDataObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<MusicDataAnalysisResult> {
         return this.essentiaService.getMusicData(fileInfo.filePath, userId)
             .pipe(
                 catchError((err, caught) => {
