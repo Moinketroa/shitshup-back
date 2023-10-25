@@ -29,7 +29,7 @@ import { Step7Service } from './step/step-7.service';
         NotionModule,
         WarningModule,
         DropboxModule,
-        AuthModule,
+        AuthModule.forRoot(),
     ],
     providers: [
         ProcessPendingService,

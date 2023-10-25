@@ -7,7 +7,7 @@ import { AuthModule } from '../../auth/auth.module';
 @Module({
     imports: [
         WarningModule,
-        AuthModule,
+        AuthModule.forRoot(),
     ],
     providers: [
         YoutubeDownloaderPythonRepository,

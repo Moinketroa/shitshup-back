@@ -5,12 +5,16 @@ import { Socket } from 'socket.io';
 import { isNullOrUndefined } from '../../util/util';
 import { isArray } from 'lodash';
 import { WsAuthService } from '../ws-auth.service';
+import * as process from 'process';
 
 @Injectable()
 export class WsAuthGuard implements CanActivate {
 
+    private readonly JWT_SECRET: string;
+
     constructor(private jwtService: JwtService,
                 private readonly wsAuthService:  WsAuthService,) {
+        this.JWT_SECRET = process.env.JWT_SECRET || '';
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -22,7 +26,7 @@ export class WsAuthGuard implements CanActivate {
 
         try {
             const payload = await this.jwtService.verifyAsync(token, {
-                secret: 'your-secret-key', // Replace with your actual secret key
+                secret: this.JWT_SECRET,
             });
 
             const userFound = await this.wsAuthService.validate(payload);

@@ -18,10 +18,10 @@ import { ScheduleModule } from '@nestjs/schedule';
         }),
         ScheduleModule.forRoot(),
 
-        AuthModule,
+        AuthModule.forRoot(),
         DropboxAuthModule,
 
-        PersistenceModule,
+        PersistenceModule.forRoot(),
 
         YoutubeModule,
 
