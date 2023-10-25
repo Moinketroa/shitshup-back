@@ -7,7 +7,7 @@ import { TaskController } from './task.controller';
 
 @Module({
     imports: [
-        AuthModule,
+        AuthModule.forRoot(),
         TaskPersistenceModule,
     ],
     controllers: [

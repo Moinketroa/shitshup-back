@@ -13,7 +13,7 @@ import { DropboxAuthModule } from '../auth/dropbox-auth/dropbox-auth.module';
         YoutubePersistenceModule,
         ProcessPendingModule,
 
-        AuthModule,
+        AuthModule.forRoot(),
         YoutubeAuthModule,
         DropboxAuthModule,
 

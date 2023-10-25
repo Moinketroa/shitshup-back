@@ -16,7 +16,7 @@ import { DropboxRefresherJob } from './dropbox-refresher.job';
         DropboxClientModule,
         DropboxPersistenceModule,
 
-        AuthModule,
+        AuthModule.forRoot(),
 
         TypeOrmModule.forFeature([DropboxUserEntity]),
     ],

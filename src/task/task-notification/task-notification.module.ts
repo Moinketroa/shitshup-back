@@ -25,7 +25,7 @@ export function pgClientInit(moduleConfigServiceConfig: ModuleConfigService) {
 @Module({
     imports: [
         TaskPersistenceModule,
-        AuthModule,
+        AuthModule.forRoot(),
     ],
     providers: [
         TaskNotificationGateway,

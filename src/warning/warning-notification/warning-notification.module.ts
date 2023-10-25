@@ -5,7 +5,7 @@ import { WarningNotificationService } from './warning-notification.service';
 
 @Module({
     imports: [
-        AuthModule,
+        AuthModule.forRoot(),
     ],
     providers: [
         WarningNotificationGateway,

@@ -8,10 +8,16 @@ import { isNullOrUndefined } from '../../util/util';
 import { JwtService } from '@nestjs/jwt';
 import { JwtStrategy } from '../jwt.strategy';
 import { Request } from 'express';
+import * as process from 'process';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-    constructor(private jwtService: JwtService, private jwtStrategy: JwtStrategy) {}
+
+    private readonly JWT_SECRET: string;
+
+    constructor(private jwtService: JwtService, private jwtStrategy: JwtStrategy) {
+        this.JWT_SECRET = process.env.JWT_SECRET || '';
+    }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
         const request = context.switchToHttp().getRequest();
@@ -22,7 +28,7 @@ export class AuthGuard implements CanActivate {
 
         try {
             const payload = await this.jwtService.verifyAsync(token, {
-                secret: 'your-secret-key', // Replace with your actual secret key
+                secret: this.JWT_SECRET,
             });
 
             const userFound = await this.jwtStrategy.validate(payload);

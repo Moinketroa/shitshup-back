@@ -10,7 +10,7 @@ import { WarningNotificationModule } from './warning-notification/warning-notifi
     imports: [
         WarningPersistenceModule,
         WarningNotificationModule,
-        AuthModule,
+        AuthModule.forRoot(),
     ],
     controllers: [
         WarningController,
