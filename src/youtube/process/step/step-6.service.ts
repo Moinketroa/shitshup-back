@@ -47,15 +47,19 @@ export class Step6Service extends AbstractStep {
         const subTask = await this.createSubStepTask(TaskCategory.SUB6_GET_SPLEETER_DATA, fileInfos.length);
 
         return await this.runSubTask(subTask, async () => {
-            const $spleeterPredictAndDownload = fileInfos.map(
-                fileInfo => this.buildObservable(fileInfo, currentUser?.id!, subTask)
-            );
-
-            return Promise.all($spleeterPredictAndDownload.map(obs => firstValueFrom(obs)));
+            for (const fileInfo of fileInfos) {
+                await this.getSpleeterData(fileInfo, currentUser?.id!, subTask);
+            }
         });
     }
 
-    private buildObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<void> {
+    private async getSpleeterData(fileInfo: FileInfo, userId: string, parentTask: Task) {
+        return await firstValueFrom(
+            this.buildSpleeterDataObservable(fileInfo, userId, parentTask)
+        );
+    }
+
+    private buildSpleeterDataObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<void> {
         const musicFilePath: string = fileInfo.filePath;
         const zipFilePath: string = musicFilePath.replace(/\.[^.]+$/, '.zip');
 
