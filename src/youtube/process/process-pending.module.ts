@@ -15,9 +15,9 @@ import { NotionModule } from '../../notion/notion.module';
 import { WarningModule } from '../../warning/warning.module';
 import { AuthModule } from '../../auth/auth.module';
 import { Step2OneVideoService } from './step/step-2-one-video.service';
-import { Step6Service } from './step/step-6.service';
-import { DropboxModule } from '../../dropbox/dropbox.module';
 import { Step7Service } from './step/step-7.service';
+import { DropboxModule } from '../../dropbox/dropbox.module';
+import { Step6Service } from './step/step-6.service';
 
 @Module({
     imports: [
@@ -39,8 +39,8 @@ import { Step7Service } from './step/step-7.service';
         Step3Service,
         Step4Service,
         Step5Service,
-        Step6Service,
         Step7Service,
+        Step6Service,
 
         MusicDataMapper,
 
