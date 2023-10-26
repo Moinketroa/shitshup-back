@@ -7,7 +7,7 @@ import { YoutubeAuthService } from '../auth/youtube-auth/youtube-auth.service';
 import { YoutubePlaylistPreview } from '../dao/youtube/entity/youtube-playlist-preview.entity';
 import { OAuth2Client } from 'google-auth-library';
 import { ProcessPendingService } from './process/process-pending.service';
-import { ProcessOneVideoService } from './process/process-one-video.service';
+import { ProcessRequest } from './process/model/process-request.model';
 
 @Injectable()
 export class YoutubeService {
@@ -15,8 +15,7 @@ export class YoutubeService {
     constructor(private readonly oAuth2Client: OAuth2Client,
                 private readonly youtubePlaylistRepository: YoutubePlaylistRepository,
                 private readonly youtubeAuthService: YoutubeAuthService,
-                private readonly processPendingService: ProcessPendingService,
-                private readonly processOneVideoService: ProcessOneVideoService,) {
+                private readonly processPendingService: ProcessPendingService) {
     }
 
     getPlaylists(youtubeUser: YoutubeUser): Promise<YoutubeShitshupPlaylists | null> {
@@ -44,17 +43,10 @@ export class YoutubeService {
         return this.youtubePlaylistRepository.getPendingPlaylistPreview(youtubeUser);
     }
 
-    async triggerProcessPending(youtubeUser: YoutubeUser): Promise<any> {
+    async triggerProcess(youtubeUser: YoutubeUser, processRequest: ProcessRequest): Promise<any> {
         const tokenRes = await this.oAuth2Client.getAccessToken();
         const token = tokenRes.token as string;
 
-        return this.processPendingService.processPending(youtubeUser, token);
-    }
-
-    async triggerProcessOneVideo(youtubeUser: YoutubeUser, videoId: string): Promise<any> {
-        const tokenRes = await this.oAuth2Client.getAccessToken();
-        const token = tokenRes.token as string;
-
-        return this.processOneVideoService.processOneVideo(youtubeUser, token, videoId);
+        return this.processPendingService.processPending(youtubeUser, token, processRequest);
     }
 }

@@ -25,17 +25,17 @@ export class Step1Service extends AbstractStep {
         super(processTaskService, taskService, warningService);
     }
 
-    async stepVerifyPlaylistIdsAndCheckForExplicitDuplicates(token: string, playlistId: string): Promise<string[]> {
-        await this.initStepTask(TaskCategory.STEP1, 3);
+    async stepVerifyPlaylistIdsAndCheckForExplicitDuplicates(token: string, playlistId: string, doDeleteExplicitDuplicates: boolean): Promise<string[]> {
+        await this.initStepTask(TaskCategory.STEP1, this.calculateTotalSteps(doDeleteExplicitDuplicates));
 
-        const result = await this.triggerStepProcess(token, playlistId);
+        const result = await this.triggerStepProcess(token, playlistId, doDeleteExplicitDuplicates);
 
         await this.completeStepTask();
 
         return result;
     }
 
-    private async triggerStepProcess(token: string, playlistId: string): Promise<string[]> {
+    private async triggerStepProcess(token: string, playlistId: string, doDeleteExplicitDuplicates: boolean): Promise<string[]> {
         const allIdsToProcess = await this.triggerSubStepListAllIdsToProcess(token, playlistId);
 
         if (allIdsToProcess.length === 0) {
@@ -50,7 +50,11 @@ export class Step1Service extends AbstractStep {
         );
 
         if (allExplicitDuplicatesIds.length !== 0) {
-            await this.triggerDeleteExplicitDuplicates(playlistId, allExplicitDuplicatesIds);
+            if (doDeleteExplicitDuplicates) {
+                await this.triggerDeleteExplicitDuplicates(playlistId, allExplicitDuplicatesIds);
+            } else {
+                console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates found. Excluding them from process');
+            }
         } else {
             console.log('[PROCESS_PENDING][STEP 1] No Explicit duplicates found.');
         }
@@ -72,7 +76,7 @@ export class Step1Service extends AbstractStep {
     }
 
     private async triggerCheckForExplicitDuplicates(token: string, allIdsToProcess: string[]): Promise<string[]> {
-        console.log('[PROCESS_PENDING][STEP 1] Fetching IDs of playlist');
+        console.log('[PROCESS_PENDING][STEP 1] Checking for explicit duplicates');
         const subTask = await this.createSubStepTask(TaskCategory.SUB1_CHECK_EXPLICIT_DUPLICATES, 1);
 
         return await this.runSubTask(subTask, async () => {
@@ -113,5 +117,11 @@ export class Step1Service extends AbstractStep {
         } finally {
             await this.progressStepTask();
         }
+    }
+
+    private calculateTotalSteps(doDeleteExplicitDuplicates: boolean): number {
+        return doDeleteExplicitDuplicates
+            ? 3
+            : 2;
     }
 }
