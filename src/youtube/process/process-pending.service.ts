@@ -8,8 +8,8 @@ import { ProcessTaskService } from './process-task.service';
 import { Step2Results } from './model/step-2-results.model';
 import { MusicDataAnalysisResult } from './model/music-data-analysis-result.model';
 import { Step5Service } from './step/step-5.service';
-import { Step6Service } from './step/step-6.service';
 import { Step7Service } from './step/step-7.service';
+import { Step6Service } from './step/step-6.service';
 import { Step5Result } from './model/step-5-result.model';
 import { ProcessRequest } from './model/process-request.model';
 import { Step2OneVideoService } from './step/step-2-one-video.service';
@@ -27,8 +27,8 @@ export class ProcessPendingService {
         private readonly step3: Step3Service,
         private readonly step4: Step4Service,
         private readonly step5: Step5Service,
-        private readonly step6: Step6Service,
-        private readonly step7: Step7Service,
+        private readonly step6: Step7Service,
+        private readonly step7: Step6Service,
         private readonly processTaskService: ProcessTaskService,
     ) {
     }
