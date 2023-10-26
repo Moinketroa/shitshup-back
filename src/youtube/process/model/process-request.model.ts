@@ -26,10 +26,6 @@ export class ProcessRequest {
             throw new BadRequestException();
         }
 
-        if (processRequest.doPredictStems && !processRequest.doFetchMusicAnalysisData) {
-            throw new BadRequestException();
-        }
-
         if (processRequest.doLinkNotionToDropbox && (!processRequest.doPushResultsToNotion || !processRequest.doFetchMusicAnalysisData)) {
             throw new BadRequestException();
         }
