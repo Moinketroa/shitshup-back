@@ -7,7 +7,7 @@ import { EssentiaService } from '../../../essentia/essentia.service';
 import { AuthService } from '../../../auth/auth.service';
 import { FileInfo } from '../../../dao/youtube-downloader-python/model/file-info.model';
 import { TaskCategory } from '../../../task/model/task-category.enum';
-import { catchError, finalize, firstValueFrom, Observable, tap, throwError } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 import { Task } from '../../../task/model/task.model';
 import { WarningType } from '../../../warning/model/warning-type.enum';
 
@@ -54,32 +54,25 @@ export class Step6Service extends AbstractStep {
     }
 
     private async getSpleeterData(fileInfo: FileInfo, userId: string, parentTask: Task) {
-        return await firstValueFrom(
-            this.buildSpleeterDataObservable(fileInfo, userId, parentTask)
-        );
+        try {
+            return await firstValueFrom(
+                this.buildSpleeterDataObservable(fileInfo, userId)
+            );
+        } catch (e) {
+            await this.createWarning(
+                fileInfo.id,
+                WarningType.ESSENTIA_ERROR,
+                `${this.ESSENTIA_ERROR_WARNING_MESSAGE} ${e.toString()}`,
+            )
+        } finally {
+            await this.progressTask(parentTask);
+        }
     }
 
-    private buildSpleeterDataObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<void> {
+    private buildSpleeterDataObservable(fileInfo: FileInfo, userId: string): Observable<void> {
         const musicFilePath: string = fileInfo.filePath;
         const zipFilePath: string = musicFilePath.replace(/\.[^.]+$/, '.zip');
 
-        return this.essentiaService.getSpleeterData(musicFilePath, userId, zipFilePath)
-            .pipe(
-                catchError((err, caught) => {
-                    this.createWarning(
-                        fileInfo.id,
-                        WarningType.ESSENTIA_ERROR,
-                        `${this.ESSENTIA_ERROR_WARNING_MESSAGE} ${err.toString()}`,
-                    ).then();
-
-                    return throwError(err);
-                }),
-                tap(() => {
-                    this.progressTask(parentTask).then();
-                }),
-                finalize(() => {
-                    this.progressTask(parentTask).then();
-                })
-            )
+        return this.essentiaService.getSpleeterData(musicFilePath, userId, zipFilePath);
     }
 }

@@ -1,7 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { FileInfo } from '../../../dao/youtube-downloader-python/model/file-info.model';
 import { EssentiaService } from '../../../essentia/essentia.service';
-import { catchError, finalize, firstValueFrom, map, Observable, tap, throwError } from 'rxjs';
+import { firstValueFrom, map, Observable } from 'rxjs';
 import { MusicDataMapper } from '../mapper/music-data.mapper';
 import { MusicDataAnalysisResult } from '../model/music-data-analysis-result.model';
 import { AbstractStep } from './abstract-step.class';
@@ -12,6 +12,7 @@ import { Task } from '../../../task/model/task.model';
 import { WarningService } from '../../../warning/warning.service';
 import { WarningType } from '../../../warning/model/warning-type.enum';
 import { AuthService } from '../../../auth/auth.service';
+import { isDefined } from '../../../util/util';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -53,42 +54,39 @@ export class Step4Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const fileInfo of fileInfos) {
-                results.push(
-                    await this.analyseMusicData(fileInfo, currentUser?.id!, subTask)
-                );
+                const musicDataAnalysisResult = await this.analyseMusicData(fileInfo, currentUser?.id!, subTask);
+
+                if (isDefined(musicDataAnalysisResult)) {
+                    results.push(musicDataAnalysisResult);
+                }
             }
 
             return results;
         });
     }
 
-    private async analyseMusicData(fileInfo: FileInfo, userId: string, parentTask: Task) {
-        return await firstValueFrom(
-            this.buildAnalyseMusicDataObservable(fileInfo, userId, parentTask)
-        );
+    private async analyseMusicData(fileInfo: FileInfo, userId: string, parentTask: Task): Promise<MusicDataAnalysisResult | undefined> {
+        try {
+            return await firstValueFrom(
+                this.buildAnalyseMusicDataObservable(fileInfo, userId)
+            );
+        } catch (e) {
+            await this.createWarning(
+                fileInfo.id,
+                WarningType.ESSENTIA_ERROR,
+                `${this.ESSENTIA_ERROR_WARNING_MESSAGE} ${e.toString()}`,
+            )
+        } finally {
+            await this.progressTask(parentTask);
+        }
     }
 
-    private buildAnalyseMusicDataObservable(fileInfo: FileInfo, userId: string, parentTask: Task): Observable<MusicDataAnalysisResult> {
+    private buildAnalyseMusicDataObservable(fileInfo: FileInfo, userId: string): Observable<MusicDataAnalysisResult> {
         return this.essentiaService.getMusicData(fileInfo.filePath, userId)
             .pipe(
-                catchError((err, caught) => {
-                    this.createWarning(
-                        fileInfo.id,
-                        WarningType.ESSENTIA_ERROR,
-                        `${this.ESSENTIA_ERROR_WARNING_MESSAGE} ${err.toString()}`,
-                    ).then();
-
-                    return throwError(err);
-                }),
-                tap(() => {
-                    this.progressTask(parentTask).then();
-                }),
                 map(musicData => (
                     this.musicDataMapper.toMusicDataAnalysisResult(musicData, fileInfo)
                 )),
-                finalize(() => {
-                    this.progressTask(parentTask).then();
-                })
             )
     }
 }
