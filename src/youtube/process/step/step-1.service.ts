@@ -9,6 +9,7 @@ import { TaskService } from '../../../task/task.service';
 import { TaskCategory } from '../../../task/model/task-category.enum';
 import { WarningType } from '../../../warning/model/warning-type.enum';
 import { WarningService } from '../../../warning/warning.service';
+import { Task } from '../../../task/model/task.model';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -98,14 +99,14 @@ export class Step1Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const explicitIdToDelete of allExplicitDuplicatesIds) {
-                await this.deleteExplicitDuplicate(playlistId, explicitIdToDelete)
+                await this.deleteExplicitDuplicate(playlistId, explicitIdToDelete, subTask)
             }
 
             console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates deleted from playlist');
         });
     }
 
-    private async deleteExplicitDuplicate(playlistId: string, explicitIdToDelete: string) {
+    private async deleteExplicitDuplicate(playlistId: string, explicitIdToDelete: string, subTask: Task) {
         try {
             await this.youtubePlaylistRepository.deleteIdFromPlaylist(playlistId, explicitIdToDelete);
         } catch (e: any) {
@@ -115,7 +116,7 @@ export class Step1Service extends AbstractStep {
                 `${this.NOT_DELETED_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
-            await this.progressStepTask();
+            await this.progressTask(subTask);
         }
     }
 

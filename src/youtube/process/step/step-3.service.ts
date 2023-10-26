@@ -7,6 +7,7 @@ import { TaskService } from '../../../task/task.service';
 import { TaskCategory } from '../../../task/model/task-category.enum';
 import { WarningService } from '../../../warning/warning.service';
 import { WarningType } from '../../../warning/model/warning-type.enum';
+import { Task } from '../../../task/model/task.model';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -58,14 +59,14 @@ export class Step3Service extends AbstractStep {
             console.log('[PROCESS_PENDING][STEP 3] Deleting videos from pending playlist.');
 
             for (const downloadedId of allDownloadedIds) {
-                await this.deleteIdFromPending(youtubeUser, downloadedId);
+                await this.deleteIdFromPending(youtubeUser, downloadedId, subTask);
             }
 
             console.log('[PROCESS_PENDING][STEP 3] Deleting done.');
         });
     }
 
-    private async deleteIdFromPending(youtubeUser: YoutubeUser, downloadedId: string) {
+    private async deleteIdFromPending(youtubeUser: YoutubeUser, downloadedId: string, subTask: Task) {
         try {
             await this.youtubePlaylistRepository.deleteIdFromPlaylist(youtubeUser.pendingPlaylistId, downloadedId);
         } catch (e: any) {
@@ -75,7 +76,7 @@ export class Step3Service extends AbstractStep {
                 `${this.NOT_DELETED_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
-            await this.progressStepTask();
+            await this.progressTask(subTask);
         }
     }
 
