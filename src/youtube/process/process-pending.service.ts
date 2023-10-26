@@ -55,10 +55,10 @@ export class ProcessPendingService {
                     await this.triggerStep7(step5Results);
                 }
             }
+        }
 
-            if (processRequest.doPredictStems) {
-                await this.triggerStep6(fileInfos);
-            }
+        if (processRequest.doPredictStems) {
+            await this.triggerStep6(fileInfos);
         }
 
         console.log('[PROCESS_PENDING] Process ended.');
