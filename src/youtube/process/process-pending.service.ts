@@ -11,6 +11,9 @@ import { Step5Service } from './step/step-5.service';
 import { Step6Service } from './step/step-6.service';
 import { Step7Service } from './step/step-7.service';
 import { Step5Result } from './model/step-5-result.model';
+import { ProcessRequest } from './model/process-request.model';
+import { Step2OneVideoService } from './step/step-2-one-video.service';
+import { FileInfo } from '../../dao/youtube-downloader-python/model/file-info.model';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -20,6 +23,7 @@ export class ProcessPendingService {
     constructor(
         private readonly step1: Step1Service,
         private readonly step2: Step2Service,
+        private readonly step2OneVideo: Step2OneVideoService,
         private readonly step3: Step3Service,
         private readonly step4: Step4Service,
         private readonly step5: Step5Service,
@@ -29,45 +33,65 @@ export class ProcessPendingService {
     ) {
     }
 
-    async processPending(youtubeUser: YoutubeUser, token: string): Promise<any> {
-        await this.processTaskService.initProcessMainTask(7);
+    async processPending(youtubeUser: YoutubeUser, token: string, processRequest: ProcessRequest): Promise<any> {
+        await this.processTaskService.initProcessMainTask(this.calculateTotalSteps(processRequest));
 
-        const allIdsToProcess = await this.triggerStep1(youtubeUser, token);
+        const fileInfos = await this.triggerFirstsSteps(youtubeUser, token, processRequest);
 
-        if (allIdsToProcess.length === 0) {
+        if (fileInfos.length === 0) {
             console.log('[PROCESS_PENDING] No videos to process. Process ended.');
             await this.processTaskService.completeTask();
 
             return [];
         }
 
-        const step2Results = await this.triggerStep2(token, allIdsToProcess);
+        if (processRequest.doFetchMusicAnalysisData) {
+            const musicDataAnalysisResults = await this.triggerStep4(fileInfos);
 
-        await this.triggerStep3(youtubeUser, allIdsToProcess, step2Results);
+            if (processRequest.doPushResultsToNotion) {
+                const step5Results = await this.triggerStep5(musicDataAnalysisResults);
 
-        const musicDataAnalysisResults = await this.triggerStep4(step2Results);
+                if (processRequest.doLinkNotionToDropbox) {
+                    await this.triggerStep7(step5Results);
+                }
+            }
 
-        const step5Results = await this.triggerStep5(musicDataAnalysisResults);
-
-        await this.triggerStep6(step2Results);
-
-        await this.triggerStep7(step5Results);
+            if (processRequest.doPredictStems) {
+                await this.triggerStep6(fileInfos);
+            }
+        }
 
         console.log('[PROCESS_PENDING] Process ended.');
         await this.processTaskService.completeTask();
-
-        return {
-            idsNotDownloaded: step2Results.idsNotDownloaded,
-            musicDataAnalysisResult: musicDataAnalysisResults,
-        };
     }
 
-    private async triggerStep1(youtubeUser: YoutubeUser, token: string) {
+    private async triggerFirstsSteps(youtubeUser: YoutubeUser, token: string, processRequest: ProcessRequest) {
+        if (processRequest.processOneVideo) {
+            return await this.triggerStep2OneVideo(token, processRequest.uniqueVideoId);
+        } else {
+            const allIdsToProcess = await this.triggerStep1(youtubeUser, token, processRequest.doDeleteExplicitDuplicates);
+
+            if (allIdsToProcess.length === 0) {
+                return [];
+            }
+
+            const step2Results = await this.triggerStep2(token, allIdsToProcess);
+
+            if (processRequest.doDeleteFromPending) {
+                await this.triggerStep3(youtubeUser, allIdsToProcess, step2Results);
+            }
+
+            return step2Results.fileInfos;
+        }
+    }
+
+    private async triggerStep1(youtubeUser: YoutubeUser, token: string, doDeleteExplicitDuplicates: boolean) {
         const pendingPlaylistId = youtubeUser.pendingPlaylistId;
 
         const allIdsToProcess = await this.step1.stepVerifyPlaylistIdsAndCheckForExplicitDuplicates(
             token,
             pendingPlaylistId,
+            doDeleteExplicitDuplicates
         );
 
         await this.processTaskService.incrementTasksDone();
@@ -83,14 +107,22 @@ export class ProcessPendingService {
         return step2Results;
     }
 
+    private async triggerStep2OneVideo(token: string, videoId: string): Promise<FileInfo[]> {
+        const fileInfos = await this.step2OneVideo.stepDownloadOneVideo(token, videoId);
+
+        await this.processTaskService.incrementTasksDone();
+
+        return fileInfos;
+    }
+
     private async triggerStep3(youtubeUser: YoutubeUser, allIdsToProcess: string[], step2Results: Step2Results) {
         await this.step3.stepDeleteVideosFromPending(youtubeUser, allIdsToProcess, step2Results.idsNotDownloaded);
 
         await this.processTaskService.incrementTasksDone();
     }
 
-    private async triggerStep4(step2Results: Step2Results) {
-        const musicDataAnalysisResults = await this.step4.stepGetMusicInfos(step2Results.fileInfos);
+    private async triggerStep4(fileInfos: FileInfo[]) {
+        const musicDataAnalysisResults = await this.step4.stepGetMusicInfos(fileInfos);
 
         await this.processTaskService.incrementTasksDone();
 
@@ -105,8 +137,8 @@ export class ProcessPendingService {
         return step5Results;
     }
 
-    private async triggerStep6(step2Results: Step2Results) {
-        await this.step6.stepGetSpleeterData(step2Results.fileInfos);
+    private async triggerStep6(fileInfos: FileInfo[]) {
+        await this.step6.stepGetSpleeterData(fileInfos);
 
         await this.processTaskService.incrementTasksDone();
     }
@@ -115,5 +147,31 @@ export class ProcessPendingService {
         await this.step7.stepLinkNotionRowToUploadFileDropbox(step5Results);
 
         await this.processTaskService.incrementTasksDone();
+    }
+
+    private calculateTotalSteps(processRequest: ProcessRequest) {
+        // STEP 2 Is mandatory
+        let stepNumber: number = 1;
+
+        if (processRequest.doLinkNotionToDropbox) {
+            stepNumber++;
+        }
+        if (processRequest.doPredictStems) {
+            stepNumber++;
+        }
+        if (processRequest.doPushResultsToNotion) {
+            stepNumber++;
+        }
+        if (processRequest.doFetchMusicAnalysisData) {
+            stepNumber++;
+        }
+        if (processRequest.doDeleteFromPending) {
+            stepNumber++;
+        }
+        if (!processRequest.processOneVideo) {
+            stepNumber++
+        }
+
+        return stepNumber;
     }
 }
