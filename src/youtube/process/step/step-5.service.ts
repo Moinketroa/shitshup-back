@@ -9,6 +9,7 @@ import { WarningService } from '../../../warning/warning.service';
 import { WarningType } from '../../../warning/model/warning-type.enum';
 import { Step5Result } from '../model/step-5-result.model';
 import { isDefined } from '../../../util/util';
+import { Task } from '../../../task/model/task.model';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -46,7 +47,7 @@ export class Step5Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const musicDataAnalysisResult of musicDataAnalysisResults) {
-                const notionRowId = await this.addAnalysisResultToNotion(musicDataAnalysisResult);
+                const notionRowId = await this.addAnalysisResultToNotion(musicDataAnalysisResult, subTask);
 
                 if (isDefined(notionRowId)) {
                     results.push(<Step5Result>{
@@ -61,7 +62,7 @@ export class Step5Service extends AbstractStep {
         });
     }
 
-    private async addAnalysisResultToNotion(musicDataAnalysisResult: MusicDataAnalysisResult): Promise<string | undefined> {
+    private async addAnalysisResultToNotion(musicDataAnalysisResult: MusicDataAnalysisResult, subTask: Task): Promise<string | undefined> {
         try {
             return await this.notionService.addRowToMediaLibrary(musicDataAnalysisResult);
         } catch (e: any) {
@@ -71,7 +72,7 @@ export class Step5Service extends AbstractStep {
                 `${this.NOTION_ERROR_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
-            await this.progressStepTask();
+            await this.progressTask(subTask);
         }
     }
 

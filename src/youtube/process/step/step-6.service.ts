@@ -11,6 +11,7 @@ import { MusicDataAnalysisResult } from '../model/music-data-analysis-result.mod
 import { isDefined } from '../../../util/util';
 import { NotionService } from '../../../notion/notion.service';
 import { Step6Result } from '../model/step-6-result.model';
+import { Task } from '../../../task/model/task.model';
 
 @Injectable({
     scope: Scope.TRANSIENT,
@@ -55,7 +56,10 @@ export class Step6Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const step5Result of step5Results) {
-                const dropboxFilePath = await this.uploadTrackToDropbox(step5Result.musicDataAnalysisResult);
+                const dropboxFilePath = await this.uploadTrackToDropbox(
+                    step5Result.musicDataAnalysisResult,
+                    subTask,
+                );
 
                 if (isDefined(dropboxFilePath)) {
                     uploadResults.push({
@@ -70,7 +74,7 @@ export class Step6Service extends AbstractStep {
         });
     }
 
-    private async uploadTrackToDropbox(musicDataAnalysisResult: MusicDataAnalysisResult) {
+    private async uploadTrackToDropbox(musicDataAnalysisResult: MusicDataAnalysisResult, subTask: Task) {
         try {
             return await this.dropboxService.uploadFileToCloud(musicDataAnalysisResult.fileName, musicDataAnalysisResult.filePath);
         } catch (e: any) {
@@ -80,7 +84,7 @@ export class Step6Service extends AbstractStep {
                 `${this.DROPBOX_UPLOAD_ERROR_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
-            await this.progressStepTask();
+            await this.progressTask(subTask);
         }
     }
 
@@ -92,7 +96,7 @@ export class Step6Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const step6Result of step6Results) {
-                const directDownloadLink = await this.createSharingLink(step6Result);
+                const directDownloadLink = await this.createSharingLink(step6Result, subTask);
 
                 if (isDefined(directDownloadLink)) {
                     results.push({
@@ -107,7 +111,7 @@ export class Step6Service extends AbstractStep {
         });
     }
 
-    private async createSharingLink(step6Result: Step6Result): Promise<string | undefined> {
+    private async createSharingLink(step6Result: Step6Result, subTask: Task): Promise<string | undefined> {
         try {
             return await this.dropboxService.createSharingLink(step6Result.dropboxFilePath);
         } catch (e: any) {
@@ -117,7 +121,7 @@ export class Step6Service extends AbstractStep {
                 `${this.DROPBOX_SHARING_ERROR_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
-            await this.progressStepTask();
+            await this.progressTask(subTask);
         }
     }
 
@@ -127,14 +131,14 @@ export class Step6Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const step6Result of step6Results) {
-                await this.linkDropboxFileToNotionRow(step6Result);
+                await this.linkDropboxFileToNotionRow(step6Result, subTask);
             }
 
             console.log('[PROCESS_PENDING][STEP 6] Uploading tracks to Dropbox done.');
         });
     }
 
-    private async linkDropboxFileToNotionRow(step6Result: Step6Result) {
+    private async linkDropboxFileToNotionRow(step6Result: Step6Result, subTask: Task) {
         try {
             return await this.notionService.linkFileToPage(step6Result.notionRowId, step6Result.sharingLink!);
         } catch (e: any) {
@@ -144,7 +148,7 @@ export class Step6Service extends AbstractStep {
                 `${this.NOTION_DROPBOX_LINK_ERROR_WARNING_MESSAGE} ${e.toString()}`,
             )
         } finally {
-            await this.progressStepTask();
+            await this.progressTask(subTask);
         }
     }
 }
