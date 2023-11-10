@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { YoutubeUser } from '../../auth/youtube-auth/model/youtube-user.model';
 import { Step1Service } from './step/step-1.service';
 import { Step2Service } from './step/step-2.service';
@@ -20,6 +20,8 @@ import { FileInfo } from '../../dao/youtube-downloader-python/model/file-info.mo
 })
 export class ProcessPendingService {
 
+    private readonly logger = new Logger(ProcessPendingService.name);
+
     constructor(
         private readonly step1: Step1Service,
         private readonly step2: Step2Service,
@@ -39,7 +41,7 @@ export class ProcessPendingService {
         const fileInfos = await this.triggerFirstsSteps(youtubeUser, token, processRequest);
 
         if (fileInfos.length === 0) {
-            console.log('[PROCESS_PENDING] No videos to process. Process ended.');
+            this.logger.log('No videos to process. Process ended.');
             await this.processTaskService.completeTask();
 
             return [];
@@ -61,7 +63,7 @@ export class ProcessPendingService {
             await this.triggerStep6(fileInfos);
         }
 
-        console.log('[PROCESS_PENDING] Process ended.');
+        this.logger.log('Process ended.');
         await this.processTaskService.completeTask();
     }
 

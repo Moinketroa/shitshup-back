@@ -11,17 +11,12 @@ export class MusicDataStandard {
 
 export class MusicDataMetaData {
     audio_properties: MusicDataAudioProperties;
-    tags: MusicDataTags;
 }
 
 export class MusicDataAudioProperties {
     length: number;
     replay_gain: number;
     sample_rate: number;
-}
-
-export class MusicDataTags {
-    file_name: string;
 }
 
 export class MusicDataRhythm {

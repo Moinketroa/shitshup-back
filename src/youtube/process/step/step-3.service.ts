@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { YoutubeUser } from '../../../auth/youtube-auth/model/youtube-user.model';
 import { YoutubePlaylistRepository } from '../../../dao/youtube/youtube-playlist-repository.service';
 import { AbstractStep } from './abstract-step.class';
@@ -13,6 +13,8 @@ import { Task } from '../../../task/model/task.model';
     scope: Scope.TRANSIENT,
 })
 export class Step3Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step3Service.name);
 
     private readonly NOT_DELETED_WARNING_MESSAGE: string = '[Step 3] Cannot delete video from pending playlist';
     constructor(processTaskService: ProcessTaskService,
@@ -56,13 +58,13 @@ export class Step3Service extends AbstractStep {
         const subTask = await this.createSubStepTask(TaskCategory.SUB3_DELETE_IDS_FROM_PENDING, allDownloadedIds.length);
 
         return await this.runSubTask(subTask, async () => {
-            console.log('[PROCESS_PENDING][STEP 3] Deleting videos from pending playlist.');
+            this.logger.log('Deleting videos from pending playlist.');
 
             for (const downloadedId of allDownloadedIds) {
                 await this.deleteIdFromPending(youtubeUser, downloadedId, subTask);
             }
 
-            console.log('[PROCESS_PENDING][STEP 3] Deleting done.');
+            this.logger.log('Deleting done.');
         });
     }
 
@@ -70,6 +72,8 @@ export class Step3Service extends AbstractStep {
         try {
             await this.youtubePlaylistRepository.deleteIdFromPlaylist(youtubeUser.pendingPlaylistId, downloadedId);
         } catch (e: any) {
+            this.logger.error(e);
+
             await this.createWarning(
                 downloadedId,
                 WarningType.CANNOT_DELETE_FROM_PLAYLIST,

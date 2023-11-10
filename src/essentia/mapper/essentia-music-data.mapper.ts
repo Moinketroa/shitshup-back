@@ -6,10 +6,10 @@ import {
     MusicDataPredictions,
     MusicDataTimbre,
 } from '../../dao/essentia/entity/music-data.entity';
-import { MusicData } from '../model/music-data.model';
+import { MusicData, NullMusicData } from '../model/music-data.model';
 import * as lodash from 'lodash';
 import { isArray } from 'lodash';
-import { convertRange, formatDurationFromSeconds, roundTwoDecimal } from '../../util/util';
+import { convertRange, formatDurationFromSeconds, isDefined, roundTwoDecimal } from '../../util/util';
 import { MusicDataCategory } from '../model/music-data-category.enum';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const camelotWheel = require('../../../deps/regorxxx/Camelot-Wheel-Notation:2.0.1/camelot_wheel_xxx.js');
@@ -32,6 +32,10 @@ export class EssentiaMusicDataMapper {
     private readonly NORMAL_PEOPLE_DANCEABILITY_RANGE: [number, number] = [ 0, 10 ];
 
     mapFromEntity(musicDataEntity: MusicDataEntity): MusicData {
+        if (this.isEmptyMusicDataEntity(musicDataEntity)) {
+            return new NullMusicData();
+        }
+
         const mostConfidentKeyEstimation: MusicDataKeyEstimation = this.getMostConfidentEstimation(
             musicDataEntity.standard.tonal.key_edma,
             musicDataEntity.standard.tonal.key_krumhansl,
@@ -41,8 +45,6 @@ export class EssentiaMusicDataMapper {
         const { genres, altGenres } = this.calculateGenres(musicDataEntity.predictions.genre);
 
         return <MusicData>{
-            fileName: musicDataEntity.standard.metadata.tags.file_name,
-
             length: formatDurationFromSeconds(
                 musicDataEntity.standard.metadata.audio_properties.length,
                 this.MINUTES_COLON_SECONDS_FORMAT,
@@ -64,6 +66,10 @@ export class EssentiaMusicDataMapper {
             timbre: this.mapTimbre(musicDataEntity.predictions.timbre),
             categories: this.calculateCategories(musicDataEntity.predictions),
         };
+    }
+
+    private isEmptyMusicDataEntity(musicDataEntity: any): boolean {
+        return !!isDefined(musicDataEntity.error);
     }
 
     private getAlternateBPM(bpm: number): number {

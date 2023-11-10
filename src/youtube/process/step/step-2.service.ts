@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import {
     YoutubeDownloaderPythonRepository,
 } from '../../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
@@ -19,6 +19,8 @@ import { WarningType } from '../../../warning/model/warning-type.enum';
     scope: Scope.TRANSIENT,
 })
 export class Step2Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step2Service.name);
 
     private readonly NOT_DOWNLOADED_WARNING_MESSAGE: string = '[Step 2] Video not downloaded. Perhaps its not available anymore.';
 
@@ -56,19 +58,19 @@ export class Step2Service extends AbstractStep {
     }
 
     private async triggerSubStepDownloadPlaylist(token: string, allIdsToProcess: string[]): Promise<string> {
-        console.log('[PROCESS_PENDING][STEP 2] Downloading...');
+        this.logger.log('Downloading...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_DOWNLOAD_PLAYLIST, allIdsToProcess.length);
 
         return await this.runSubTask(subTask, async () => {
             const filesDownloadedInfoFilepath = await this.youtubeDownloaderPythonRepository.downloadPlaylist(token, allIdsToProcess);
-            console.log('[PROCESS_PENDING][STEP 2] Download finished');
+            this.logger.log('Download finished');
 
             return filesDownloadedInfoFilepath;
         });
     }
 
     private async triggerSubStepParseFileInfos(filesDownloadedInfoFilepath: string): Promise<FileInfo[]> {
-        console.log('[PROCESS_PENDING][STEP 2] Parsing downloaded videos infos');
+        this.logger.log('Parsing downloaded videos infos');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_PARSE_FILE_INFOS, 1);
 
         return await this.runSubTask(subTask, async () => {
@@ -82,13 +84,13 @@ export class Step2Service extends AbstractStep {
     }
 
     private async triggerSubStepDeleteFileInfoTempFile(filesDownloadedInfoFilepath: string): Promise<void> {
-        console.log('[PROCESS_PENDING][STEP 2] Deleting Videos info temp file');
+        this.logger.log('Deleting Videos info temp file');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_DELETE_FILE_INFO_TEMP_FILE, 1);
 
         return await this.runSubTask(subTask, async () => {
             this.deleteFile(filesDownloadedInfoFilepath);
 
-            console.log('[PROCESS_PENDING][STEP 2] Videos info temp file deleted');
+            this.logger.log('Videos info temp file deleted');
         });
     }
 
@@ -101,18 +103,18 @@ export class Step2Service extends AbstractStep {
     }
 
     private async triggerSubStepGetIdsNotDownloaded(token: string, allIdsToProcess: string[]) {
-        console.log('[PROCESS_PENDING][STEP 2] Listing videos not downloaded');
+        this.logger.log('Listing videos not downloaded');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_GET_IDS_NOT_DOWNLOADED, 1);
 
         return await this.runSubTask(subTask, async () => {
             const notDownloadedIds = await this.youtubeDownloaderPythonRepository.getIdNotDownloaded(token, allIdsToProcess);
 
             if (notDownloadedIds.length === 0) {
-                console.log('[PROCESS_PENDING][STEP 2] Success : All videos downloaded');
+                this.logger.log('Success : All videos downloaded');
             } else {
                 await this.createWarningsForNotDownloadedIds(notDownloadedIds);
 
-                console.log('[PROCESS_PENDING][STEP 2] Videos ids not downloaded : ', notDownloadedIds.join(' '));
+                this.logger.log('Videos ids not downloaded : ', notDownloadedIds.join(' '));
             }
 
             return notDownloadedIds;

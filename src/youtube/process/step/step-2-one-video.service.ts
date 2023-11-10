@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import {
     YoutubeDownloaderPythonRepository,
 } from '../../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
@@ -17,6 +17,8 @@ import { WarningService } from '../../../warning/warning.service';
     scope: Scope.TRANSIENT,
 })
 export class Step2OneVideoService extends AbstractStep {
+
+    protected readonly logger = new Logger(Step2OneVideoService.name);
 
     constructor(processTaskService: ProcessTaskService,
                 taskService: TaskService,
@@ -47,19 +49,19 @@ export class Step2OneVideoService extends AbstractStep {
     }
 
     private async triggerSubStepDownloadOneVideo(token: string, videoId: string): Promise<string> {
-        console.log('[PROCESS_PENDING][STEP 2] Downloading...');
+        this.logger.log('Downloading...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_DOWNLOAD_PLAYLIST, 1);
 
         return await this.runSubTask(subTask, async () => {
             const filesDownloadedInfoFilepath = await this.youtubeDownloaderPythonRepository.downloadOneVideo(token, videoId);
-            console.log('[PROCESS_PENDING][STEP 2] Download finished');
+            this.logger.log('Download finished');
 
             return filesDownloadedInfoFilepath;
         });
     }
 
     private async triggerSubStepParseFileInfos(filesDownloadedInfoFilepath: string): Promise<FileInfo[]> {
-        console.log('[PROCESS_PENDING][STEP 2] Parsing downloaded videos infos');
+        this.logger.log('Parsing downloaded videos infos');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_PARSE_FILE_INFOS, 1);
 
         return await this.runSubTask(subTask, async () => {
@@ -73,13 +75,13 @@ export class Step2OneVideoService extends AbstractStep {
     }
 
     private async triggerSubStepDeleteFileInfoTempFile(filesDownloadedInfoFilepath: string): Promise<void> {
-        console.log('[PROCESS_PENDING][STEP 2] Deleting Videos info temp file');
+        this.logger.log('Deleting Videos info temp file');
         const subTask = await this.createSubStepTask(TaskCategory.SUB2_DELETE_FILE_INFO_TEMP_FILE, 1);
 
         return await this.runSubTask(subTask, async () => {
             this.deleteFile(filesDownloadedInfoFilepath);
 
-            console.log('[PROCESS_PENDING][STEP 2] Videos info temp file deleted');
+            this.logger.log('Videos info temp file deleted');
         });
     }
 

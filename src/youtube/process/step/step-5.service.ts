@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { AbstractStep } from './abstract-step.class';
 import { ProcessTaskService } from '../process-task.service';
 import { TaskService } from '../../../task/task.service';
@@ -15,6 +15,8 @@ import { Task } from '../../../task/model/task.model';
     scope: Scope.TRANSIENT,
 })
 export class Step5Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step5Service.name);
 
     private readonly NOTION_ERROR_WARNING_MESSAGE: string = 'Error during Notion row adding.';
 
@@ -40,7 +42,7 @@ export class Step5Service extends AbstractStep {
     }
 
     private async triggerSubStepPushResultsToNotion(musicDataAnalysisResults: MusicDataAnalysisResult[]): Promise<Step5Result[]> {
-        console.log('[PROCESS_PENDING][STEP 5] Pushing results to Notion...');
+        this.logger.log('Pushing results to Notion...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB5_PUSH_RESULTS_TO_NOTION, musicDataAnalysisResults.length);
 
         const results: Step5Result[] = [];
@@ -57,15 +59,23 @@ export class Step5Service extends AbstractStep {
                 }
             }
 
-            console.log('[PROCESS_PENDING][STEP 5] Pushing results to Notion done.');
+            this.logger.log('Pushing results to Notion done.');
             return results;
         });
     }
 
     private async addAnalysisResultToNotion(musicDataAnalysisResult: MusicDataAnalysisResult, subTask: Task): Promise<string | undefined> {
         try {
-            return await this.notionService.addRowToMediaLibrary(musicDataAnalysisResult);
+            this.logger.debug(`Sending request...`);
+
+            const rowCreatedId = await this.notionService.addRowToMediaLibrary(musicDataAnalysisResult);
+
+            this.logger.debug(`Request done.`);
+
+            return rowCreatedId;
         } catch (e: any) {
+            this.logger.error(e);
+
             await this.createWarning(
                 musicDataAnalysisResult.videoId,
                 WarningType.NOTION_ADD_ROW_ERROR,

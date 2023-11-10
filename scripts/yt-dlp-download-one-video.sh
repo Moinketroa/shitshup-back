@@ -35,6 +35,6 @@ yt-dlp \
 --quiet \
 --no-warnings \
 --print-to-file after_move:"$outputPrintTemplate" "$tempOutputPrintFile" \
-"$videoId" || true
+-- "$videoId" || true
 
 echo "$tempOutputPrintFile"

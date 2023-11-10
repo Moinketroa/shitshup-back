@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { YoutubeUser } from '../../auth/youtube-auth/model/youtube-user.model';
 import { isNullOrUndefined } from '../../util/util';
 import {
@@ -16,6 +16,8 @@ import { YoutubePart } from './type/youtube-part.enum';
 
 @Injectable()
 export class YoutubePlaylistRepository {
+
+    private readonly logger = new Logger(YoutubePlaylistRepository.name);
 
     private readonly DEFAULT_PENDING_PLAYLIST_NAME: string;
     private readonly DEFAULT_PENDING_PLAYLIST_DESCRIPTION: string;
@@ -116,7 +118,7 @@ export class YoutubePlaylistRepository {
     }
 
     async deleteIdFromPlaylist(playlistId: string, idToDelete: string): Promise<void> {
-        console.log(`[YoutubePlaylistRepository] Searching for ${ idToDelete } videos playlistItem`);
+        this.logger.log(`Searching for ${ idToDelete } videos playlistItem`);
         const playlistItemToDelete: YoutubeClientPlaylistItem | null = await this.fetchPlaylistItemToDelete(
             playlistId,
             idToDelete,
@@ -126,7 +128,7 @@ export class YoutubePlaylistRepository {
             throw new Error('Playlist Item to delete can\'t be found. Did you already delete it ?');
         }
 
-        console.log(`[YoutubePlaylistRepository] Deleting video from playlist ${ playlistId }`);
+        this.logger.log(`Deleting video from playlist ${ playlistId }`);
         await this.removePlaylistItem(playlistId, playlistItemToDelete);
     }
 
@@ -156,7 +158,7 @@ export class YoutubePlaylistRepository {
         let nextPageToken: string | null | undefined = undefined;
 
         do {
-            console.log(`[YoutubePlaylistRepository] Fetching playlist page`);
+            this.logger.log(`Fetching playlist page`);
             playlistPage = await this.getPlaylistPage(playlistId, nextPageToken);
 
             playlistItems = playlistPage.items ?? [];
@@ -180,12 +182,10 @@ export class YoutubePlaylistRepository {
             throw new Error('Video Id is not defined');
         }
 
-        console.log(
-            `[YoutubePlaylistRepository] Deleting video ${ playlistItem.contentDetails?.videoId } from playlist ${ playlistId }`,
-        );
+        this.logger.log(`Deleting video ${ playlistItem.contentDetails?.videoId } from playlist ${ playlistId }`);
         await this.youtubeClient.playlistItems.delete({
             id: playlistItem.id,
         });
-        console.log(`[YoutubePlaylistRepository] Video ${ playlistItem.contentDetails?.videoId } deleted`);
+        this.logger.log(`Video ${ playlistItem.contentDetails?.videoId } deleted`);
     }
 }

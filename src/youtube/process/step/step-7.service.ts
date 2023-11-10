@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { AbstractStep } from './abstract-step.class';
 import { ProcessTaskService } from '../process-task.service';
 import { TaskService } from '../../../task/task.service';
@@ -15,6 +15,8 @@ import { WarningType } from '../../../warning/model/warning-type.enum';
     scope: Scope.TRANSIENT,
 })
 export class Step7Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step7Service.name);
 
     private readonly ESSENTIA_ERROR_WARNING_MESSAGE: string = 'Error during Spleeter prediction.';
 
@@ -43,7 +45,7 @@ export class Step7Service extends AbstractStep {
     private async triggerSubStepGetSpleeterData(fileInfos: FileInfo[]) {
         const currentUser = await this.authService.getCurrentUser();
 
-        console.log('[PROCESS_PENDING][STEP 7] Query Python Server for spleeter data...');
+        this.logger.log('Query Python Server for spleeter data...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB7_GET_SPLEETER_DATA, fileInfos.length);
 
         return await this.runSubTask(subTask, async () => {
@@ -55,10 +57,14 @@ export class Step7Service extends AbstractStep {
 
     private async getSpleeterData(fileInfo: FileInfo, userId: string, parentTask: Task) {
         try {
-            return await firstValueFrom(
-                this.buildSpleeterDataObservable(fileInfo, userId)
-            );
+            this.logger.debug(`Sending request...`);
+
+            await firstValueFrom(this.buildSpleeterDataObservable(fileInfo, userId));
+
+            this.logger.debug(`Request done.`);
         } catch (e) {
+            this.logger.error(e);
+
             await this.createWarning(
                 fileInfo.id,
                 WarningType.ESSENTIA_ERROR,

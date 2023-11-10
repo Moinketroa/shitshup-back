@@ -6,15 +6,18 @@ import { TaskCategory } from '../../../task/model/task-category.enum';
 import { TaskName } from '../../../task/model/task-name.model';
 import { WarningService } from '../../../warning/warning.service';
 import { WarningType } from '../../../warning/model/warning-type.enum';
+import { Logger } from '@nestjs/common';
 
-export class AbstractStep {
+export abstract class AbstractStep {
+
+    protected abstract logger: Logger;
 
     private stepTask: Task;
     private stepTaskCategory: TaskCategory;
 
-    constructor(private readonly processTaskService: ProcessTaskService,
-                private readonly taskService: TaskService,
-                private readonly warningService: WarningService,) {
+    protected constructor(private readonly processTaskService: ProcessTaskService,
+                          private readonly taskService: TaskService,
+                          private readonly warningService: WarningService,) {
 
     }
 
@@ -97,7 +100,7 @@ export class AbstractStep {
         try {
             return await taskRun();
         } catch (e) {
-            console.error(`Task ${task.name} failed.`, e);
+            this.logger.error(`Task ${task.name} failed.`, e);
             await this.failTask(task);
 
             throw e;
