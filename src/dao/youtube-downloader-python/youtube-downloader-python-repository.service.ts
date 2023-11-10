@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as process from 'process';
 import { ChildProcessPromise, exec } from 'promisify-child-process';
 import { WarningService } from '../../warning/warning.service';
@@ -8,6 +8,8 @@ import { AuthService } from '../../auth/auth.service';
 
 @Injectable()
 export class YoutubeDownloaderPythonRepository {
+
+    private readonly logger = new Logger(YoutubeDownloaderPythonRepository.name);
 
     private readonly LIST_ID_SCRIPT_PATH: string;
     private readonly CHECK_DIFF_SCRIPT_PATH: string;
@@ -40,16 +42,20 @@ export class YoutubeDownloaderPythonRepository {
         } = await this.execScript(this.LIST_ID_SCRIPT_PATH, ...args);
 
         if (stderr) {
-            console.warn(`[LIST_ID] Error during List ids of playlist id ${playlistId} : `, stderr);
+            this.logger.warn(`[LIST_ID] Error during List ids of playlist id ${playlistId} : `, stderr);
 
             await this.handleError(stderr);
         }
 
-        const idsOfPlaylist = (<string>stdout)?.trim();
+        const idsOfPlaylistStringOutput = (<string>stdout)?.trim();
 
-        return idsOfPlaylist?.length === 0
+        const idsOfPlaylist = idsOfPlaylistStringOutput?.length === 0
             ? []
-            : idsOfPlaylist.split('\n');
+            : idsOfPlaylistStringOutput.split('\n');
+
+        this.logger.debug(`[LIST_ID] ${ idsOfPlaylist.length } IDs in playlist ID ${ playlistId }`);
+
+        return idsOfPlaylist;
     }
 
     async downloadPlaylist(token: string, allPlaylistIds: string[]): Promise<string> {
@@ -68,10 +74,12 @@ export class YoutubeDownloaderPythonRepository {
         } = await this.execScript(this.DOWNLOAD_PLAYLIST_SCRIPT_PATH, ...args);
 
         if (stderr) {
-            console.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
+            this.logger.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
         }
 
         const filesDownloadedInfoFilepath = (<string>stdout)?.trim();
+
+        this.logger.debug(`File ${ filesDownloadedInfoFilepath } created`);
 
         return filesDownloadedInfoFilepath;
     }
@@ -91,7 +99,7 @@ export class YoutubeDownloaderPythonRepository {
         } = await this.execScript(this.DOWNLOAD_ONE_VIDEO_SCRIPT_PATH, ...args);
 
         if (stderr) {
-            console.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
+            this.logger.warn(`[DOWNLOAD_PLAYLIST] Error during download : `, stderr);
 
             if (isString(stderr)) {
                 await this.warningService.createWarning(videoId, WarningType.NOT_DOWNLOADED, stderr);
@@ -99,6 +107,8 @@ export class YoutubeDownloaderPythonRepository {
         }
 
         const filesDownloadedInfoFilepath = (<string>stdout)?.trim();
+
+        this.logger.debug(`File ${ filesDownloadedInfoFilepath } created`);
 
         return filesDownloadedInfoFilepath;
     }
@@ -118,16 +128,20 @@ export class YoutubeDownloaderPythonRepository {
         } = await this.execScript(this.CHECK_DIFF_SCRIPT_PATH, ...args);
 
         if (stderr) {
-            console.warn(`[CHECK_DIFF] Error during Check diff : `, stderr);
+            this.logger.warn(`[CHECK_DIFF] Error during Check diff : `, stderr);
 
             await this.handleError(stderr);
         }
 
-        const idsNotDownloaded = (<string>stdout)?.trim();
+        const idsNotDownloadedStringOutput = (<string>stdout)?.trim();
 
-        return idsNotDownloaded?.length === 0
+        const idsNotDownloaded = idsNotDownloadedStringOutput?.length === 0
             ? []
-            : idsNotDownloaded.split('\n');
+            : idsNotDownloadedStringOutput.split('\n');
+
+        this.logger.debug(`${ idsNotDownloaded.length } IDs not downloaded in ${ allPlaylistIds.length } original IDs`);
+
+        return idsNotDownloaded;
     }
 
     private execScript(scriptPath: string, ...args: string[]): ChildProcessPromise {

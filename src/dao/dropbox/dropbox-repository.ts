@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Dropbox } from 'dropbox';
 import * as fs from 'fs';
 import { DropboxAccount, DropboxFileMetadata, DropboxLinkMetadataReference } from './type/dropbox-client.type';
+const emojiRegex = require('emoji-regex');
 
 @Injectable()
 export class DropboxRepository {
@@ -11,7 +12,7 @@ export class DropboxRepository {
 
     async uploadFile(fileName: string, filePath: string): Promise<DropboxFileMetadata> {
         const response = await this.dropboxClient.filesUpload({
-            path: '/' + fileName,
+            path: '/' + this.formatFileName(fileName),
             contents: fs.createReadStream(filePath),
         });
 
@@ -35,4 +36,8 @@ export class DropboxRepository {
         return response.result;
     }
 
+    private formatFileName(fileName: string): string {
+        const regex = emojiRegex();
+        return fileName.replace(regex, '');
+    }
 }

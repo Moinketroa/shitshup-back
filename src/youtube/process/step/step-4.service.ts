@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { FileInfo } from '../../../dao/youtube-downloader-python/model/file-info.model';
 import { EssentiaService } from '../../../essentia/essentia.service';
 import { firstValueFrom, map, Observable } from 'rxjs';
@@ -18,6 +18,8 @@ import { isDefined } from '../../../util/util';
     scope: Scope.TRANSIENT,
 })
 export class Step4Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step4Service.name);
 
     private readonly ESSENTIA_ERROR_WARNING_MESSAGE: string = 'Error during Essentia analysis.';
 
@@ -47,7 +49,7 @@ export class Step4Service extends AbstractStep {
     private async triggerSubStepAnalyseMusicData(fileInfos: FileInfo[]) {
         const currentUser = await this.authService.getCurrentUser();
 
-        console.log('[PROCESS_PENDING][STEP 4] Query Python Server for music data...');
+        this.logger.log('Query Python Server for music data...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB4_ANALYSE_SIMPLE_MUSIC_DATAS, fileInfos.length);
 
         const results: MusicDataAnalysisResult[] = [];
@@ -67,10 +69,18 @@ export class Step4Service extends AbstractStep {
 
     private async analyseMusicData(fileInfo: FileInfo, userId: string, parentTask: Task): Promise<MusicDataAnalysisResult | undefined> {
         try {
-            return await firstValueFrom(
+            this.logger.debug(`Sending request...`)
+
+            const musicDataAnalysisResult = await firstValueFrom(
                 this.buildAnalyseMusicDataObservable(fileInfo, userId)
             );
+
+            this.logger.debug(`Request done.`);
+
+            return musicDataAnalysisResult;
         } catch (e) {
+            this.logger.error(e);
+
             await this.createWarning(
                 fileInfo.id,
                 WarningType.ESSENTIA_ERROR,

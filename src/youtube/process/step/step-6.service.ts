@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import { AbstractStep } from './abstract-step.class';
 import { ProcessTaskService } from '../process-task.service';
 import { TaskService } from '../../../task/task.service';
@@ -17,6 +17,8 @@ import { Task } from '../../../task/model/task.model';
     scope: Scope.TRANSIENT,
 })
 export class Step6Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step6Service.name);
 
     private readonly DROPBOX_UPLOAD_ERROR_WARNING_MESSAGE: string = 'Error during Dropbox upload.';
     private readonly DROPBOX_SHARING_ERROR_WARNING_MESSAGE: string = 'Error during creating shared Dropbox link.';
@@ -49,7 +51,7 @@ export class Step6Service extends AbstractStep {
     }
 
     private async triggerSubStepUploadTracksToDropbox(step5Results: Step5Result[]): Promise<Step6Result[]> {
-        console.log('[PROCESS_PENDING][STEP 6] Uploading tracks to Dropbox...');
+        this.logger.log('Uploading tracks to Dropbox...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB6_UPLOAD_TRACKS_TO_DROPBOX, step5Results.length);
 
         const uploadResults: Step6Result[] = [];
@@ -69,15 +71,23 @@ export class Step6Service extends AbstractStep {
                 }
             }
 
-            console.log('[PROCESS_PENDING][STEP 6] Uploading tracks to Dropbox done.');
+            this.logger.log('Uploading tracks to Dropbox done.');
             return uploadResults;
         });
     }
 
     private async uploadTrackToDropbox(musicDataAnalysisResult: MusicDataAnalysisResult, subTask: Task) {
         try {
-            return await this.dropboxService.uploadFileToCloud(musicDataAnalysisResult.fileName, musicDataAnalysisResult.filePath);
+            this.logger.debug(`Sending request...`);
+
+            const filePath = await this.dropboxService.uploadFileToCloud(musicDataAnalysisResult.fileName, musicDataAnalysisResult.filePath);
+
+            this.logger.debug(`Request done.`);
+
+            return filePath;
         } catch (e: any) {
+            this.logger.error(e);
+
             await this.createWarning(
                 musicDataAnalysisResult.videoId,
                 WarningType.DROPBOX_UPLOAD_ERROR,
@@ -89,7 +99,7 @@ export class Step6Service extends AbstractStep {
     }
 
     private async triggerSubStepCreateSharedLinks(step6Results: Step6Result[]): Promise<Step6Result[]> {
-        console.log('[PROCESS_PENDING][STEP 6] Creating Dropbox sharing links...');
+        this.logger.log('Creating Dropbox sharing links...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB6_CREATE_SHARING_LINKS, step6Results.length);
 
         const results: Step6Result[] = [];
@@ -106,15 +116,23 @@ export class Step6Service extends AbstractStep {
                 }
             }
 
-            console.log('[PROCESS_PENDING][STEP 6] Uploading tracks to Dropbox done.');
+            this.logger.log('Uploading tracks to Dropbox done.');
             return results;
         });
     }
 
     private async createSharingLink(step6Result: Step6Result, subTask: Task): Promise<string | undefined> {
         try {
-            return await this.dropboxService.createSharingLink(step6Result.dropboxFilePath);
+            this.logger.debug(`Sending request...`);
+
+            const sharingLink = await this.dropboxService.createSharingLink(step6Result.dropboxFilePath);
+
+            this.logger.debug(`Request done.`);
+
+            return sharingLink;
         } catch (e: any) {
+            this.logger.error(e);
+
             await this.createWarning(
                 step6Result.musicDataAnalysisResult.videoId,
                 WarningType.DROPBOX_CREATE_SHARING_LINK_ERROR,
@@ -126,7 +144,7 @@ export class Step6Service extends AbstractStep {
     }
 
     private async triggerSubStepLinkDropboxFileToNotionRow(step6Results: Step6Result[]): Promise<void> {
-        console.log('[PROCESS_PENDING][STEP 6] Linking Dropbox file to the corresponding Notion row...');
+        this.logger.log('Linking Dropbox file to the corresponding Notion row...');
         const subTask = await this.createSubStepTask(TaskCategory.SUB6_LINK_TRACKS_TO_NOTION, step6Results.length);
 
         return await this.runSubTask(subTask, async () => {
@@ -134,14 +152,20 @@ export class Step6Service extends AbstractStep {
                 await this.linkDropboxFileToNotionRow(step6Result, subTask);
             }
 
-            console.log('[PROCESS_PENDING][STEP 6] Uploading tracks to Dropbox done.');
+            this.logger.log('Uploading tracks to Dropbox done.');
         });
     }
 
     private async linkDropboxFileToNotionRow(step6Result: Step6Result, subTask: Task) {
         try {
-            return await this.notionService.linkFileToPage(step6Result.notionRowId, step6Result.sharingLink!);
+            this.logger.debug(`Sending request...`);
+
+            await this.notionService.linkFileToPage(step6Result.notionRowId, step6Result.sharingLink!);
+
+            this.logger.debug(`Request done.`);
         } catch (e: any) {
+            this.logger.error(e);
+
             await this.createWarning(
                 step6Result.musicDataAnalysisResult.videoId,
                 WarningType.NOTION_DROPBOX_LINK_ERROR,

@@ -1,4 +1,4 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable, Logger, Scope } from '@nestjs/common';
 import {
     YoutubeDownloaderPythonRepository,
 } from '../../../dao/youtube-downloader-python/youtube-downloader-python-repository.service';
@@ -15,6 +15,8 @@ import { Task } from '../../../task/model/task.model';
     scope: Scope.TRANSIENT,
 })
 export class Step1Service extends AbstractStep {
+
+    protected readonly logger = new Logger(Step1Service.name);
 
     private readonly NOT_DELETED_WARNING_MESSAGE: string = '[Step 1] Cannot delete explicit duplicate video from pending playlist';
 
@@ -40,7 +42,7 @@ export class Step1Service extends AbstractStep {
         const allIdsToProcess = await this.triggerSubStepListAllIdsToProcess(token, playlistId);
 
         if (allIdsToProcess.length === 0) {
-            console.log('[PROCESS_PENDING][STEP 1] No videos to process');
+            this.logger.log('No videos to process');
             return [];
         }
 
@@ -54,18 +56,18 @@ export class Step1Service extends AbstractStep {
             if (doDeleteExplicitDuplicates) {
                 await this.triggerDeleteExplicitDuplicates(playlistId, allExplicitDuplicatesIds);
             } else {
-                console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates found. Excluding them from process');
+                this.logger.log('Explicit duplicates found. Excluding them from process');
             }
         } else {
-            console.log('[PROCESS_PENDING][STEP 1] No Explicit duplicates found.');
+            this.logger.log('No Explicit duplicates found.');
         }
 
-        console.log('[PROCESS_PENDING][STEP 1] List of videos to process established.');
+        this.logger.log('List of videos to process established.');
         return allIdsNotDownloaded;
     }
 
     private async triggerSubStepListAllIdsToProcess(token: string, playlistId: string): Promise<string[]> {
-        console.log('[PROCESS_PENDING][STEP 1] Fetching IDs of playlist');
+        this.logger.log('Fetching IDs of playlist');
         const subTask = await this.createSubStepTask(TaskCategory.SUB1_LIST_ALL_IDS, 1);
 
         return await this.runSubTask(subTask, async () => {
@@ -77,7 +79,7 @@ export class Step1Service extends AbstractStep {
     }
 
     private async triggerCheckForExplicitDuplicates(token: string, allIdsToProcess: string[]): Promise<string[]> {
-        console.log('[PROCESS_PENDING][STEP 1] Checking for explicit duplicates');
+        this.logger.log('Checking for explicit duplicates');
         const subTask = await this.createSubStepTask(TaskCategory.SUB1_CHECK_EXPLICIT_DUPLICATES, 1);
 
         return await this.runSubTask(subTask, async () => {
@@ -89,8 +91,8 @@ export class Step1Service extends AbstractStep {
     }
 
     private async triggerDeleteExplicitDuplicates(playlistId: string, allExplicitDuplicatesIds: string[]) {
-        console.log(
-            '[PROCESS_PENDING][STEP 1] Explicit duplicates or unavailable videos found. Excluding from processing and deleting from Pending playlist...',
+        this.logger.log(
+            'Explicit duplicates or unavailable videos found. Excluding from processing and deleting from Pending playlist...',
         );
         const subTask = await this.createSubStepTask(
             TaskCategory.SUB1_DELETE_EXPLICIT_DUPLICATES,
@@ -99,17 +101,21 @@ export class Step1Service extends AbstractStep {
 
         return await this.runSubTask(subTask, async () => {
             for (const explicitIdToDelete of allExplicitDuplicatesIds) {
-                await this.deleteExplicitDuplicate(playlistId, explicitIdToDelete, subTask)
+                await this.deleteExplicitDuplicate(playlistId, explicitIdToDelete, subTask);
             }
 
-            console.log('[PROCESS_PENDING][STEP 1] Explicit duplicates deleted from playlist');
+            this.logger.log('Explicit duplicates deleted from playlist');
         });
     }
 
     private async deleteExplicitDuplicate(playlistId: string, explicitIdToDelete: string, subTask: Task) {
         try {
             await this.youtubePlaylistRepository.deleteIdFromPlaylist(playlistId, explicitIdToDelete);
+
+            this.logger.debug(`Video ID ${ explicitIdToDelete } deleted from playlist ID ${ playlistId }`);
         } catch (e: any) {
+            this.logger.error(e);
+
             await this.createWarning(
                 explicitIdToDelete,
                 WarningType.CANNOT_DELETE_FROM_PLAYLIST,

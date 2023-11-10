@@ -71,6 +71,10 @@ export class NotionPropertiesMapper {
     private findCorrespondingSelectOption(nameToFound: string, databaseProperties: any, propertyToSearch: string, propertySubPath: string): any {
         const selectOptions: any[] = databaseProperties[propertyToSearch][propertySubPath].options;
 
+        if (nameToFound.trim().length === 0) {
+            return selectOptions[0];
+        }
+
         return selectOptions.find(selectOption => selectOption.name === nameToFound);
     }
 

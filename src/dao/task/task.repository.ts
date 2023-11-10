@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Repository, TreeRepository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TaskEntity } from './entity/task.entity';
@@ -7,6 +7,8 @@ import { UserEntity } from '../user/entity/user.entity';
 
 @Injectable()
 export class TaskRepository extends TreeRepository<TaskEntity> {
+
+    private readonly logger = new Logger(TaskRepository.name);
 
     constructor(
         @InjectRepository(TaskEntity) repository: Repository<TaskEntity>
@@ -53,11 +55,13 @@ export class TaskRepository extends TreeRepository<TaskEntity> {
     }
 
     async incrementTaskDone(id: string): Promise<TaskEntity> {
-            const taskEntity = (await this.findUniqueById(id))!;
+        const taskEntity = (await this.findUniqueById(id))!;
 
         taskEntity.tasksDone++;
 
         await this.update(id, taskEntity);
+
+        this.logger.debug(`Task "${ taskEntity.taskName }" Status : Progress (${ taskEntity.tasksDone }/${ taskEntity.totalTasks })`);
 
         return taskEntity;
     }

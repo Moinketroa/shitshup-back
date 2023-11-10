@@ -1,15 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import { FileInfo } from './model/file-info.model';
 
 @Injectable()
 export class YoutubeDownloaderPythonFileInfoRepository {
 
+    private readonly logger = new Logger(YoutubeDownloaderPythonFileInfoRepository.name);
+
     async getFileInfos(filePath: string, progressStepCallback: () => void): Promise<FileInfo[]> {
         try {
             const fileContent = await fs.promises.readFile(filePath, 'utf-8');
             const lines = fileContent.split('\n');
             const fileInfos: FileInfo[] = [];
+
+            this.logger.debug(`${ lines.length } lines to read`);
 
             for (const line of lines) {
                 if (line.length !== 0) {

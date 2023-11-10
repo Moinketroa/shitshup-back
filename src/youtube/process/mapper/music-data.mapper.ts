@@ -2,21 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { MusicData } from '../../../essentia/model/music-data.model';
 import { FileInfo } from '../../../dao/youtube-downloader-python/model/file-info.model';
 import { MusicDataAnalysisResult } from '../model/music-data-analysis-result.model';
+import * as path from 'path';
 
 @Injectable()
 export class MusicDataMapper {
 
     toMusicDataAnalysisResult(musicData: MusicData, fileInfo: FileInfo): MusicDataAnalysisResult {
+        const fileName = path.basename(fileInfo.filePath);
+
         return <MusicDataAnalysisResult>{
             videoId: fileInfo.id,
             trackName: fileInfo.track === 'NA'
-                ? this.removeFileExtension(musicData.fileName)
+                ? this.removeFileExtension(fileName)
                 : fileInfo.track,
             artist: fileInfo.artist === 'NA'
                 ? ''
                 : fileInfo.artist,
             filePath: fileInfo.filePath,
-            fileName: musicData.fileName,
+            fileName: fileName,
 
             length: musicData.length,
             sampleRate: musicData.sampleRate,
