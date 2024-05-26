@@ -30,6 +30,25 @@ export class YoutubeDownloaderPythonFileInfoRepository {
         }
     }
 
+    async getFileInfo(filePath: string): Promise<FileInfo> {
+        try {
+            const fileContent = await fs.promises.readFile(filePath, 'utf-8');
+            const lines = fileContent.split('\n');
+
+            this.logger.debug(`${ lines.length } lines to read`);
+
+            for (const line of lines) {
+                if (line.length !== 0) {
+                    return this.parseLine(line);
+                }
+            }
+
+            throw new Error(`Can't find any info.`);
+        } catch (error) {
+            throw new Error('Error reading or parsing the file.');
+        }
+    }
+
     private parseLine(line: string): FileInfo {
         const fileInfo = new FileInfo();
 

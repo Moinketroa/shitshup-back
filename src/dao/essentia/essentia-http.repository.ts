@@ -4,7 +4,7 @@ import * as FormData from 'form-data';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as process from 'process';
-import { map, Observable, tap } from 'rxjs';
+import { catchError, map, Observable, tap, throwError } from 'rxjs';
 import { AxiosRequestConfig } from 'axios';
 import { MusicDataEntity } from './entity/music-data.entity';
 
@@ -28,11 +28,11 @@ export class EssentiaHttpRepository {
             const response = this.http.post<MusicDataEntity>(
                 url,
                 formData,
-                this.getOptionsFromFormData(formData)
+                this.getOptionsFromFormData(formData),
             );
 
             return response.pipe(
-                map(axiosResponse => axiosResponse.data)
+                map(axiosResponse => axiosResponse.data),
             );
         } catch (error) {
             throw error;
@@ -61,6 +61,7 @@ export class EssentiaHttpRepository {
                         writer.on('error', err => {
                             error = err;
                             writer.close();
+                            fs.unlinkSync(outputLocationPath);
                             reject(err);
                         });
                         writer.on('close', () => {
@@ -69,6 +70,13 @@ export class EssentiaHttpRepository {
                             }
                         });
                     }).then();
+                }),
+                catchError((error: any) => {
+                    if (!writer.closed) {
+                        writer.end();
+                    }
+                    fs.unlinkSync(outputLocationPath);
+                    return throwError(error);
                 }),
             );
         } catch (error) {
