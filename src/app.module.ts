@@ -9,7 +9,7 @@ import { TaskModule } from './task/task.module';
 import { DropboxAuthModule } from './auth/dropbox-auth/dropbox-auth.module';
 import { AuthModule } from './auth/auth.module';
 import { ScheduleModule } from '@nestjs/schedule';
-
+import { VerticalProcessModule } from './vertical-process/vertical-process.module';
 
 @Module({
     imports: [
@@ -32,6 +32,8 @@ import { ScheduleModule } from '@nestjs/schedule';
         TaskNotificationModule,
 
         WarningModule,
+
+        VerticalProcessModule,
     ],
 })
 export class AppModule {}

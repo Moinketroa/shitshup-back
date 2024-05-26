@@ -16,7 +16,7 @@ videoId="$3"
 # Generate a timestamp
 timestamp=$(date +%Y%m%d%H%M%S)
 # Create a temporary text file for batch-file
-tempOutputPrintFile=$(mktemp "temp_file.output_download_playlist.${timestamp}.txt")
+tempOutputPrintFile=$(mktemp "temp_file.output_download_${videoId}.${timestamp}.txt")
 
 # Output File Template
 outputTemplate="$outputPath/%(title)s (%(id)s).%(ext)s"
